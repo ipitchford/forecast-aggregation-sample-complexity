@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it using these metadata."
+type: software
+title: "Learning to aggregate Bayesian forecasts: optimal sample complexity under bounded dependence"
+abstract: "Unrefereed research candidate. Several experts report calibrated probabilities for a yes/no event; an aggregator learns how to combine them from T past cases with known outcomes. In the binary model of Lin and Chen (NeurIPS 2023), with n experts and at most m signal values each, the minimax excess Brier risk is of order min{1, log(1/delta)/T + min(eta, m^n/T)} for every bound eta on the conditional total correlation of the reports, up to universal constants, and one estimator attains it without knowing eta. So about log(1/delta)/epsilon cases are needed under conditional independence and about (m^n + log(1/delta))/epsilon under arbitrary dependence, raising the earlier m^(n-2) lower bound to m^n. Also: the rate with a known prior, unbounded report alphabets, and finitely many outcomes."
+authors:
+  - name: "Anonymous"
+version: "0.1.0-candidate"
+date-released: "2026-11-25"
+doi: "10.5281/zenodo.24532624"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.24532624"
+    description: "This version"
+  - type: doi
+    value: "10.5281/zenodo.24532623"
+    description: "All versions (concept DOI)"
+repository-code: "https://github.com/ipitchford/forecast-aggregation-sample-complexity"
+url: "https://evidencepress.org/releases/forecast-aggregation-sample-complexity/"
+license: CC0-1.0
+keywords:
+  - forecast aggregation
+  - sample complexity
+  - Bayesian aggregator
+  - minimax rate
+  - conditional total correlation
+preferred-citation:
+  type: article
+  title: "Learning to aggregate Bayesian forecasts: optimal sample complexity under bounded dependence"
+  authors:
+    - name: "Anonymous"
+  year: 2026
+  doi: "10.5281/zenodo.24532624"
+  publisher:
+    name: "Zenodo"
+  notes: "Version 0.1.0-candidate; unrefereed"

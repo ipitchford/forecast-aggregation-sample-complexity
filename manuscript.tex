@@ -1,0 +1,449 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,mathtools}
+\usepackage[left=26mm,right=26mm,top=22mm,bottom=23mm]{geometry}
+\usepackage{xcolor,booktabs,array,hyperref}
+\definecolor{ink}{HTML}{453451}
+\hypersetup{colorlinks=true,urlcolor=ink,linkcolor=ink,citecolor=ink,
+ pdftitle={Learning to aggregate Bayesian forecasts: optimal sample complexity under bounded dependence},
+ pdfauthor={Anonymous}}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\KL}{\mathop{\rm KL}\nolimits}
+\newcommand{\E}{\mathbb E}
+\newcommand{\PP}{\mathbb P}
+\newcommand{\cR}{\mathcal R}
+\newcommand{\sig}{\operatorname{logistic}}
+\newcommand{\logit}{\operatorname{logit}}
+\newcommand{\cF}{\mathcal F}
+\newcommand{\eps}{\varepsilon}
+\setlength{\parindent}{1.15em}
+\raggedbottom
+\title{Learning to aggregate Bayesian forecasts:\\ optimal sample complexity under bounded dependence}
+\author{Anonymous\\[3pt]{\small DOI \href{https://doi.org/10.5281/zenodo.24532624}{10.5281/zenodo.24532624}}}
+\date{November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+Several experts each see private evidence about a yes/no event and report their own probability for it. An aggregator wants to combine the reports as well as someone who knew how the experts' evidence fits together, but it can only learn this from a record of past cases whose outcomes are known. How long must that record be? In the binary model of Lin and Chen (NeurIPS 2023), with $n$ experts whose evidence takes at most $m$ values and exact, calibrated reports, we determine the answer up to universal constants. Let $\eta$ bound the conditional total correlation of the reports given the outcome, a measure of how far the experts are from being conditionally independent. With $T$ past cases and failure probability $\delta\le1/32$, the minimax excess Brier risk is of order
+$\min\{1,\ T^{-1}\log(1/\delta)+\min(\eta,m^n/T)\}$, and one estimator attains it without knowing $\eta$. The two endpoints settle the dependence on the target error that Lin and Chen left open: $\log(1/\delta)/\eps$ cases suffice and are needed under conditional independence, and $(m^n+\log(1/\delta))/\eps$ under arbitrary dependence, which also raises their $m^{n-2}$ lower bound to $m^n$. At the independent endpoint, standard localisation arguments already give the upper bound up to a factor $\log T$; the contribution there is removing that factor and matching it from below. The hard examples keep every expert's calibration curve, the prior and the whole distribution of report vectors fixed, so the difficulty lies entirely in interactions that no single expert's track record reveals. We also give the rate when the prior is known, show that with unbounded signal alphabets any fixed dependence allowance rules out uniform consistency, and extend the interpolation to any fixed finite number of outcomes.
+\end{abstract}
+
+\section{Introduction}
+\paragraph{The problem.}
+Suppose several forecasters each give a probability that it will rain tomorrow, that a patient will relapse, or that a geopolitical event will happen. Each has seen different evidence, and each reports honestly. How should their numbers be combined? If we knew exactly how the forecasters' evidence relates to the outcome and to each other, the best combination would be the \emph{Bayesian aggregator}: the probability of the event given all the reports together. In practice that joint structure is unknown, and the aggregator has to learn it from a track record of past cases, each consisting of the reports and the outcome that followed. This paper asks how long that track record has to be.
+
+\paragraph{Why it matters.}
+Track records are expensive: each case is a resolved event, and many settings (elections, rare diseases, macroeconomic turning points) produce only a few per year. If accurate aggregation needs a number of cases that grows exponentially with the number of experts, then in practice one must impose structure, such as the assumption that experts' evidence is conditionally independent given the outcome. Knowing exactly what each assumption buys, and what weakening it costs, tells a practitioner when a simple pooling formula is safe and when the data cannot support anything better.
+
+\paragraph{What was known.}
+Lin and Chen~\cite{lc} formalised this question. Each of $n$ experts observes a private signal with at most $m$ possible values and reports their posterior probability of the event; the aggregator receives $T$ independent past cases and must, with probability at least $1-\delta$, output a rule whose expected squared distance from the Bayesian aggregator is at most $\eps$. Their bounds, in this notation, are summarised in Table~\ref{tab:known}. For arbitrary dependence between the experts they showed a sample complexity between order $(m^{n-2}+\log(1/\delta))/\eps$ and $(m^n+\log(1/\delta))/\eps^2$. For conditionally independent experts, where the Bayesian aggregator is the classical multiplicative pooling formula (their Lemma~5.1, credited to Bordley~\cite{bordley}), they showed a sample complexity between $\log(1/\delta)/\eps$ and $\eps^{-2}\log(1/(\eps\delta))$. In both cases the bounds differ by a factor of $1/\eps$. Lin and Chen conjectured that the lower bounds have the right dependence on $\eps$ (their Section~7), and their conference poster~\cite{poster} lists two open directions: closing this gap, and ``the case between general distributions and cond.\ ind.\ distributions''. They also proved inverse-linear upper bounds in special cases: for strongly or weakly informative conditionally independent experts (their Theorems~5.4 and~5.5) and for general distributions whose joint probabilities are all bounded below by a multiple of $m^{-n}$ (their Theorem~7.1). The results below need none of these informativeness or minimum-probability conditions.
+
+\begin{table}[h]
+\centering\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{4.8cm}>{\raggedright\arraybackslash}p{6.4cm}@{}}
+\toprule
+Class of experts & Lin and Chen~\cite{lc} & This paper (Theorem~\ref{th:main})\\
+\midrule
+Conditionally independent & $\Omega\!\big(\tfrac{\log(1/\delta)}{\eps}\big)$ to $O\!\big(\tfrac{\log(1/(\eps\delta))}{\eps^2}\big)$ & $\Theta\!\big(\tfrac{\log(1/\delta)}{\eps}\big)$\\
+Dependence at most $\eta$ & not studied & $\Theta\!\big(\tfrac{\log(1/\delta)}{\eps}\big)$ if $\eta\le c\,\eps$; $\Theta\!\big(\tfrac{m^n+\log(1/\delta)}{\eps}\big)$ if $\eta\ge C\eps$\\
+Arbitrary dependence & $\Omega\!\big(\tfrac{m^{n-2}+\log(1/\delta)}{\eps}\big)$ to $O\!\big(\tfrac{m^n+\log(1/\delta)}{\eps^2}\big)$ & $\Theta\!\big(\tfrac{m^n+\log(1/\delta)}{\eps}\big)$\\
+Prior known, dependence $\le\eta$ & not studied & none needed if $\eta\le2\eps$; $\Theta\!\big(\tfrac{m^n+\log(1/\delta)}{\eps}\big)$ if $\eta\ge C\eps$\\
+\bottomrule
+\end{tabular}
+\caption{Number of resolved cases needed for excess Brier risk $\eps$ with confidence $1-\delta$, binary outcome, $n$ experts with at most $m$ signal values each. Entries are up to universal constants and hold for $\eps$ below a universal constant and $\delta\le1/32$. Here $c<1<C$ are universal constants. The ``prior known'' row is Proposition~\ref{prop:oracle}.}
+\label{tab:known}
+\end{table}
+
+\paragraph{What is new.}
+Theorem~\ref{th:main} determines the minimax risk up to universal constants for every dependence level. We measure dependence by the \emph{conditional total correlation} $\eta$ of the reports given the outcome: the information that the reports share beyond what each carries about the outcome separately. It is zero exactly under conditional independence and it is precisely the cost, in relative entropy, of pretending that the experts are conditionally independent. The minimax excess risk with $T$ cases is of order
+\[
+\min\Big\{1,\ \frac{\log(1/\delta)}{T}+\min\Big(\eta,\frac{m^n}{T}\Big)\Big\}.
+\]
+So with few cases the aggregator should use the pooling formula and accept a bias of order $\eta$; once $T$ exceeds about $m^n/\eta$, it can learn the dependence itself. One estimator, which does not need to know $\eta$, achieves this. The specific new elements are:
+\begin{itemize}
+\item \emph{Both endpoint rates.} The $1/\eps$ dependence holds at both ends, confirming Lin and Chen's conjecture for the binary model, and the dependence on the number of report profiles is $m^n$ rather than $m^{n-2}$.
+\item \emph{A calibrated hard family.} The lower bound for dependent experts uses alternatives in which every expert's report curve, the prior and the entire distribution of report vectors are identical. All the difficulty lies in two-way interactions that no single expert's record, and no amount of unlabelled report data, can reveal. The reports lie on a fixed dyadic grid needing only $O(\log(nm))$ binary digits.
+\item \emph{The value of knowing the prior} (Proposition~\ref{prop:oracle}), \emph{continuous reports} (Proposition~\ref{prop:cont}: any fixed dependence allowance prevents uniform consistency, even with independent, continuously distributed reports), and \emph{finitely many outcomes} (Section~\ref{sec:multi}).
+\end{itemize}
+
+\paragraph{How this relates to general learning theory.}
+Part of the upper bound is close to standard. Under exact conditional independence the Bayesian aggregator lies in a one-parameter, correctly specified family, and localised-complexity bounds~\cite{bbm,kol} give an excess risk of order $(\log T+\log(1/\delta))/T$ with little effort. Lin and Chen's $\eps^{-2}$ upper bound came from a global uniform-convergence argument instead. So for the conditionally independent endpoint the new content is the removal of the $\log T$ factor (Lemma~\ref{lem:chain}, which exploits the fact that the candidate rules are pointwise ordered), together with matching high-confidence lower bounds that hold uniformly in $n$. General robust regression theory for exponential families~\cite{baraud} likewise yields nearly inverse-linear bounds with a logarithmic factor. The main new content lies in the treatment of dependence: the interpolation in $\eta$, the calibrated lower-bound family that pins the $m^n$ term even when every marginal law is disclosed, and the known-prior and continuous-report results.
+
+\paragraph{Roadmap.}
+Section~\ref{sec:model} fixes the model and notation and states the main theorem. Section~\ref{sec:upper} proves the upper bound: an approximation lemma for the pooling formula, a log-free bound for least squares over an ordered family, a histogram bound, and a validation step that chooses between the two. Section~\ref{sec:lower} proves the lower bounds and the known-prior rate. Section~\ref{sec:cont} treats unbounded signal alphabets. Section~\ref{sec:multi} extends the results to finitely many outcomes and compares them with Lin and Chen's multi-outcome theorem. Section~\ref{sec:disc} discusses what the assumptions mean in practice and lists open problems. Section~\ref{sec:repro} describes the accompanying finite checks.
+
+\section{Model, notation and main result}\label{sec:model}
+This section fixes the observation model of Lin and Chen, defines the excess risk and the dependence measure, and states the main theorem.
+
+\paragraph{Experts and reports.}
+Each case consists of an outcome $Y\in\{0,1\}$ and $n\ge2$ private signals $S_1,\ldots,S_n$, drawn from a joint law $P$. Each $S_i$ takes at most $m\ge2$ values. Expert $i$ observes $S_i$ and reports the exact number $R_i=P(Y=1\mid S_i)$, so every report is \emph{calibrated}: $P(Y=1\mid R_i)=R_i$. Write $R=(R_1,\ldots,R_n)$ for the report vector and $K=m^n$ for the largest possible number of distinct report vectors. The prior $p=P(Y=1)$ and the signal laws are unknown to the aggregator.
+
+\paragraph{Learning and risk.}
+The aggregator observes $T$ independent copies of $(R,Y)$, called \emph{cases}, and then predicts $Y$ on a fresh case from its report vector alone. All logarithms are natural. Write $h(r)=P(Y=1\mid R=r)$ for the Bayesian aggregator. For a prediction rule $f$, subtracting the Bayes risk from the expected squared error (Brier score) gives the \emph{excess risk}
+\[
+ \cR_P(f)=\E_P[(f(R)-Y)^2]-\E_P[(h(R)-Y)^2]=\E_P[(f(R)-h(R))^2].
+\]
+For a fitted rule this expectation is over a fresh case, conditional on the training cases.
+
+\paragraph{Dependence.}
+For $y\in\{0,1\}$ let $P_{R\mid y}$ be the law of the report vector given $Y=y$, and $P_{R_i\mid y}$ its $i$-th marginal. The \emph{conditional total correlation} of the reports is
+\[
+ I(P)=\sum_{y}P(Y=y)\,\KL\left(P_{R\mid y}\,\middle\|\,\bigotimes_{i=1}^n P_{R_i\mid y}\right),
+\]
+with a summand taken as zero when $P(Y=y)=0$. (Total correlation, also called multi-information, is the relative entropy of a joint law from the product of its marginals; here it is computed within each outcome and averaged.) Thus $I(P)=0$ exactly when the reports are conditionally independent given $Y$. Let $\mathcal P_\eta$ be the set of laws in the model with $I(P)\le\eta$, for $0\le\eta\le\infty$.
+
+\paragraph{Minimax radius.}
+A learning rule maps the $T$ training cases (and possibly independent randomness) to a prediction rule $\widehat f$. Write $r_T(\eta,\delta)$ for the infimum of the numbers $u\ge0$ for which some learning rule satisfies
+$\sup_{P\in\mathcal P_\eta}\PP_P\{\cR_P(\widehat f)>u\}\le\delta$. The rule may depend on $n,m,\eta,\delta$; the upper bound below does not use $\eta$ or $m$. In Lin and Chen's terms, the sample complexity $T(\eps,\delta)$ is the least $T$ with $r_T(\eta,\delta)\le\eps$.
+
+\begin{theorem}[Main result]\label{th:main}
+For integers $n,m\ge2$, $T\ge1$, and for $0<\delta\le1/32$ and $0\le\eta\le\infty$, put
+\[
+ b_T=\min\left\{1,\ \frac{\log(1/\delta)}{T}+\min\left(\eta,\frac KT\right)\right\},\qquad K=m^n.
+\]
+There is a universal constant $C<\infty$ such that $2^{-17}\,b_T\le r_T(\eta,\delta)\le C\,b_T$. A single learning rule, described in Section~\ref{sec:adaptive}, attains the upper bound simultaneously for every $\eta$, $m$ and $\delta$.
+\end{theorem}
+
+The lower constant $2^{-17}$ is explicit and far from optimal; we have not optimised either constant. The upper bound uses only the actual number of distinct report vectors with positive probability, which may be much smaller than $m^n$.
+
+\begin{corollary}[Endpoint sample complexities]\label{cor:endpoints}
+For $\eps$ below a universal constant and $\delta\le1/32$, the number of cases needed for excess risk $\eps$ with probability $1-\delta$ is of order $\log(1/\delta)/\eps$ under conditional independence ($\eta=0$) and of order $(m^n+\log(1/\delta))/\eps$ under arbitrary dependence ($\eta=\infty$).
+\end{corollary}
+
+\begin{remark}[Signals versus reports]
+The theorem is stated for laws of $(R,Y)$. Conditional independence of the signals implies conditional independence of the reports. Conversely, every calibrated report law arises from a signal experiment, by letting the signals be the reports themselves. The hard examples below therefore apply to Lin and Chen's signal model, and a bound on the conditional total correlation of the signals gives the same theorem for that smaller class, by the data-processing inequality and the same lower-bound constructions.
+\end{remark}
+
+The proof occupies the next two sections: Section~\ref{sec:upper} for the upper bound and Section~\ref{sec:lower} for the lower bound.
+
+\section{The upper bound: an adaptive estimator}\label{sec:upper}
+This section builds the estimator and proves the upper half of Theorem~\ref{th:main}. The estimator fits two candidate rules on half the data: a one-parameter pooling rule, which is accurate when the experts are nearly conditionally independent, and a lookup table (histogram) of empirical frequencies, which is accurate when there are many cases. It then keeps whichever does better on the other half. Lemmas~\ref{lem:approx}, \ref{lem:chain} and~\ref{lem:hist} bound the two candidates, and Section~\ref{sec:adaptive} combines them.
+
+\subsection{The pooling family and its approximation error}
+Calibration gives $P(Y=1\mid R_i)=R_i$. Let $Q$ be the law that keeps the prior $p$ and each pair law of $(R_i,Y)$ but makes the reports independent given $Y$; we call $Q$ the \emph{conditional-product projection} of $P$. By definition, $\KL(P\|Q)=I(P)$. For interior reports and $0<p<1$, Bayes' formula and the preserved pair laws give the multiplicative pooling rule
+\[
+ Q(Y=1\mid R=r)=f_b(r)=\sig\!\Big( b+\sum_{i=1}^n\logit r_i\Big),
+ \qquad b=-(n-1)\logit p,
+\]
+where $\sig(t)=(1+e^{-t})^{-1}$ and $\logit r=\log(r/(1-r))$. This classical multiplicative formula is Lemma~5.1 of Lin and Chen~\cite{lc}, who credit it to Bordley~\cite{bordley}. Every rule $f_b$ predicts $0$ if some report equals $0$ and $1$ if some report equals $1$; a report vector containing both a $0$ and a $1$ has probability zero under $P$ and $Q$, and we predict $1/2$ there. Including the constant limits at $b=\pm\infty$, the rules $f_b$, $b\in[-\infty,\infty]$, form a compact family that is \emph{pointwise ordered}: $b\le b'$ implies $f_b\le f_{b'}$ at every input. For the degenerate priors $p\in\{0,1\}$ the outcome is deterministic and the endpoint rules predict perfectly.
+
+\begin{lemma}[Cost of assuming conditional independence]\label{lem:approx}
+For every law $P$ in the model,
+\begin{equation}\label{eq:approx}
+ \inf_b\cR_P(f_b)\le \cR_P\big(Q(Y=1\mid R=\cdot)\big)\le\tfrac12\E_{P_R}\KL(P_{Y\mid R}\|Q_{Y\mid R})
+ \le \tfrac12 I(P).
+\end{equation}
+\end{lemma}
+\begin{proof}
+For Bernoulli laws, Pinsker's inequality reads $(a-b)^2\le\tfrac12\KL(\mathrm{Bern}(a)\|\mathrm{Bern}(b))$; apply it at each report vector and average. The chain rule for relative entropy gives $\KL(P\|Q)=\KL(P_R\|Q_R)+\E_{P_R}\KL(P_{Y\mid R}\|Q_{Y\mid R})$, so the conditional term is at most $\KL(P\|Q)=I(P)$.
+\end{proof}
+
+\subsection{Least squares over an ordered family}
+To fit the offset $b$ we use least squares. A global uniform-convergence bound would leave a factor $\log T$; the following lemma removes it by exploiting the ordering.
+
+\begin{lemma}[Ordered least squares]\label{lem:chain}
+Let $(X,Y)$ have $Y\in[0,1]$, and put $h(x)=\E[Y\mid X=x]$. Let $\cF$ be a compact family of $[0,1]$-valued functions that is totally ordered pointwise, either on a finite support or, for general supports, parametrised by a compact real interval monotonically, continuously at each input and measurably in the input. Let $\widehat f$ be any least-squares empirical minimiser over $\cF$ on $s$ independent cases. There is a universal constant $C$ such that for every $t\ge1$, with probability at least $1-e^{-t}$,
+\[
+ \|\widehat f-h\|_2^2\le C\left(\inf_{f\in\cF}\|f-h\|_2^2+\frac{t}{s}\right),
+\]
+where $\|g\|_2^2=\E[g(X)^2]$ under the population law of $X$.
+\end{lemma}
+
+\begin{proof}
+\emph{Set-up.} Fix a minimiser $f_0$ of $\|f-h\|_2$ over $\cF$ (it exists by compactness) and let $a=\|f_0-h\|_2$. For $f\in\cF$ write $g_f(x,y)=(f(x)-y)^2-(f_0(x)-y)^2$. Denote by $P_s$ the empirical mean over the $s$ cases and by $P$ the population mean. Since $g_f=(f-f_0)(f+f_0-2y)$, we have $|g_f|\le1$ and $Pg_f^2\le4\|f-f_0\|_2^2$. Moreover $Pg_f=\|f-h\|_2^2-a^2\ge d^2-2ad$ with $d=\|f-f_0\|_2$, by expanding $\|f-h\|_2^2=\|f-f_0\|_2^2+2\langle f-f_0,f_0-h\rangle+a^2$ and using Cauchy--Schwarz.
+
+\emph{Step 1: a local deviation bound.} We show that there is a universal $C_1$ such that for each fixed $r>0$ and $u\ge1$, with probability at least $1-e^{-u}$,
+\begin{equation}\label{eq:local}
+ \sup_{f\in\cF,\ \|f-f_0\|_2\le r}|(P_s-P)g_f|
+ \le C_1\{r\sqrt{u/s}+u/s\}.
+\end{equation}
+Because $\cF$ is totally ordered, every $f$ satisfies either $f\ge f_0$ or $f\le f_0$; treat the upper side $\{f\ge f_0\}$, the lower side being symmetric. On this side $\|f-f_0\|_2$ increases along the order, so the localised set $\{f\ge f_0:\|f-f_0\|_2\le r\}$ is an initial segment and, by compactness, has a greatest member $f_r$. (On a finite support, maximise the sum of the coordinates; in the parametrised case, take the largest admissible parameter, the admissible set being closed by dominated convergence.) Suprema over the segment are measurable because a countable dense subset of parameters suffices, by continuity at each input.
+
+Let $d_s(f,f')=(P_s(f-f')^2)^{1/2}$ be the empirical $L^2$ distance and $A=d_s(f_r,f_0)$. The key observation is a packing bound. If $f_0\le f_1\le\cdots\le f_k\le f_r$, then at each sample point the increments $f_{j+1}-f_j$ are nonnegative and sum to at most $f_r-f_0$, so the sum of their squares is at most the square of $f_r-f_0$. Averaging over sample points gives
+\[
+ \sum_{j<k}d_s(f_j,f_{j+1})^2\le A^2 .
+\]
+In a set whose members are pairwise at $d_s$-distance at least $\epsilon$, consecutive members in the order are at distance at least $\epsilon$, so the set has at most $1+A^2/\epsilon^2$ members.
+
+Now condition on the sample. The symmetrised process $Z(f)=s^{-1}\sum_{i=1}^s\epsilon_i g_f(X_i,Y_i)$ uses independent uniform signs $\epsilon_i$ and vanishes at $f_0$. Since $|g_f-g_{f'}|\le2|f-f'|$ pointwise, the increment $Z(f)-Z(f')$ is sub-Gaussian with scale parameter $2d_s(f,f')/\sqrt s$ (use $\cosh x\le e^{x^2/2}$). For $j\ge0$ take a maximal $2^{-j}A$-separated subset $N_j$ of the segment, with $N_0=\{f_0\}$; by the packing bound $|N_j|\le1+4^j$. Link each point of $N_{j+1}$ to a point of $N_j$ within distance $2^{-j}A$. The expected maximum of the at most $1+4^{j+1}$ link increments at level $j$ is at most $C_2\,2^{-j}A\sqrt{j+1}/\sqrt s$, by the standard exponential-moment union bound for finitely many sub-Gaussian variables. Since the nets become dense in the finite set of sample values, the chaining sum controls the supremum:
+\[
+ \E_\epsilon\sup_{f}|Z(f)|\le \frac{C_2A}{\sqrt s}\sum_{j\ge0}2^{-j}\sqrt{j+1}\le\frac{C_3A}{\sqrt s}.
+\]
+(If $A=0$ the process is identically zero.) Taking expectations over the sample and using $\E A\le(\E A^2)^{1/2}=\|f_r-f_0\|_2\le r$ bounds the expected Rademacher supremum on each side by $C_3r/\sqrt s$. The symmetrisation inequality (introduce an independent copy of the sample, exchange paired observations using the random signs and apply the triangle inequality) gives $M:=\E\sup_{\|f-f_0\|_2\le r}|(P_s-P)g_f|\le 4C_3r/\sqrt s$.
+
+For concentration we use Bousquet's inequality~\cite[Theorem~2.3]{bousquet}: if $\mathcal G$ is a countable class of centred functions with $\|g\|_\infty\le1$ and $\operatorname{Var} g\le\sigma^2$, and $Z=\sup_{g\in\mathcal G}|\sum_{i=1}^s g(X_i)|$, then $\PP\{Z\ge\E Z+\sqrt{2xv}+x/3\}\le e^{-x}$ with $v=s\sigma^2+2\E Z$. Apply it to the functions $(g_f-Pg_f)/2$, for which $\sigma^2\le r^2$. Dividing by $s$, with probability at least $1-e^{-u}$ the supremum in~\eqref{eq:local} is at most $M+C_4\sqrt{(r^2+M)u/s}+C_4u/s$. Since $2\sqrt{Mu/s}\le M+u/s$ and $M\le4C_3r/\sqrt s\le 4C_3 r\sqrt{u/s}$, this proves~\eqref{eq:local}.
+
+\emph{Step 2: peeling.} Put $r_0=B(a+\sqrt{t/s})$ for a large universal $B$ fixed below. For $j\ge0$ apply~\eqref{eq:local} with radius $2^{j+1}r_0$ and $u_j=t+2j+2$. The exceptional probabilities sum to $e^{-t}\sum_j e^{-2j-2}<e^{-t}$. Consider $f$ in the shell $2^jr_0<d=\|f-f_0\|_2\le2^{j+1}r_0$. The deviation bound there is at most $C_1\{2d\sqrt{u_j/s}+u_j/s\}$. Because $u_j/s\le (3+2j)\,t/s\le(3+2j)\,4^{-j}d^2/B^2$ and $(3+2j)4^{-j}\le3$, choosing $B$ large makes this at most $d^2/4$. On the other hand $d>r_0\ge Ba\ge4a$ gives $Pg_f\ge d^2-2ad\ge d^2/2$. Hence $P_sg_f\ge Pg_f-d^2/4>0$, so $f$ is not an empirical minimiser (the minimiser has $P_sg_{\widehat f}\le P_sg_{f_0}=0$). Every empirical minimiser therefore satisfies $\|\widehat f-f_0\|_2\le r_0$, and $\|\widehat f-h\|_2\le a+r_0$, which squares to the claim.
+\end{proof}
+
+\subsection{The histogram}
+The second candidate ignores structure: it predicts, for each report vector, the fraction of training cases with that vector whose outcome was $1$, and $1/2$ for vectors not seen in training.
+
+\begin{lemma}[Histogram]\label{lem:hist}
+Let $\widehat h$ be the histogram fitted on $s$ cases, and let $K'\le K$ be the number of report vectors with positive probability. For every $t>0$, with probability at least $1-e^{-t}$,
+\begin{equation}\label{eq:hist}
+ \cR_P(\widehat h)\le 2\big[(2K'-1)\log 2+t\big]/s.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Let $\widehat P$ be the empirical joint law of $(R,Y)$, a distribution on at most $2K'$ points. In a cell (report vector) of population mass $d>0$ and empirical mass $e\ge0$, let $u$ and $w$ be the coordinatewise square roots of the true and fitted conditional outcome laws (the fitted law being $(1/2,1/2)$ when $e=0$), and $\alpha=\langle u,w\rangle$. The cell's contribution to the squared square-root distance between $P$ and $\widehat P$ is
+$d+e-2\sqrt{de}\,\alpha=(\sqrt e-\alpha\sqrt d)^2+d(1-\alpha^2)\ge d(1-\alpha^2)$. By Cauchy--Schwarz applied to $(u-w)(u+w)$, the squared total variation of the two conditional laws is at most $1-\alpha^2$, and for Bernoulli laws this squared variation is the squared prediction error. Summing over cells, $\cR_P(\widehat h)$ is at most the squared square-root distance $\sum(\sqrt{P}-\sqrt{\widehat P})^2=2(1-\sum\sqrt{P\widehat P})$, which is at most $\KL(\widehat P\|P)$ by $-\log x\ge1-x$ and Jensen's inequality. Agrawal's bound~\cite[Theorem~I.3]{agrawal} on the moment generating function of the empirical divergence on $2K'$ points gives $\E\exp[(s/2)\KL(\widehat P\|P)]\le 2^{2K'-1}$, and Markov's inequality proves~\eqref{eq:hist}.
+\end{proof}
+
+\subsection{The adaptive estimator and the proof of the upper bound}\label{sec:adaptive}
+\paragraph{The estimator.} For $T=1$ predict $1/2$. For $T\ge2$, split the data into a training part of size $s=\lfloor T/2\rfloor$ and a validation part of size $v=T-s$. On the training part fit the pooling rule $f_{\widehat b}$ by least squares over $b\in[-\infty,\infty]$, and fit the histogram $\widehat h$. Return whichever candidate has the smaller squared error on the validation part, breaking ties by a fixed rule. The least-squares fit minimises a continuous function of the compactified offset, and choosing its smallest minimiser makes the choice measurable. The procedure uses neither $\eta$ nor $m$, nor any lower bound on cell probabilities.
+
+\paragraph{Computing the fit exactly.} With rational input, put $z=e^b$ and let $u=\prod_i r_i/(1-r_i)$ be the odds products of the interior training report vectors; each fitted value is $zu/(1+zu)$. If there are $q\ge1$ distinct interior odds products, multiplying the derivative of the empirical loss by $\prod_u(1+zu)^3$ gives a polynomial in $z$ of degree at most $3q-2$. Evaluate the loss at its nonnegative real roots and at $z=0,\infty$. If the polynomial vanishes identically, or $q=0$, every offset is a minimiser.
+
+\paragraph{The validation step.} Condition on the two fitted candidates. For either candidate $f$, the excess loss $Z_f=(f(R)-Y)^2-(h(R)-Y)^2$ on a validation case has mean $\cR_P(f)$, absolute value at most one, and variance at most $\E Z_f^2\le4\cR_P(f)$, since $Z_f=(f-h)(f+h-2Y)$. Bernstein's inequality and a union bound give, for both candidates simultaneously and with probability at least $1-4e^{-t}$,
+\[
+ |(P_v-P)Z_f|\le \tfrac12\cR_P(f)+C t/v .
+\]
+The validation rule compares empirical losses, and the unknown term $(h(R)-Y)^2$ is common to both, so the chosen candidate $\widehat f$ satisfies $P_vZ_{\widehat f}\le P_vZ_{f}$ for the other candidate $f$. Combining the two displays, $\cR_P(\widehat f)\le3\min_f\cR_P(f)+4Ct/v$.
+
+\paragraph{Proof of the upper bound in Theorem~\ref{th:main}.} Take $t=\log(6/\delta)\ge1$. With probability at least $1-6e^{-t}=1-\delta$, Lemma~\ref{lem:chain} (with the pooling family, using Lemma~\ref{lem:approx} for the approximation term), Lemma~\ref{lem:hist} and the validation step all hold. Then
+\[
+ \cR_P(\widehat f)\le 3\min\Big\{C\big(\tfrac12 I(P)+\tfrac{t}{s}\big),\ \tfrac{2[(2K-1)\log2+t]}{s}\Big\}+\frac{4Ct}{v}.
+\]
+Since $s,v\ge T/3$ and $t\le 3\log(1/\delta)$ for $\delta\le1/32$, and since always $\cR_P(\widehat f)\le1$, the right side is at most a universal multiple of $b_T$ whenever $I(P)\le\eta$. \qed
+
+\section{Lower bounds within the calibrated model}\label{sec:lower}
+This section proves the lower half of Theorem~\ref{th:main}. Section~\ref{sec:conf} shows that the confidence term $\log(1/\delta)/T$ is unavoidable even for conditionally independent experts. Section~\ref{sec:interact} shows that the term $\min(\eta,K/T)$ is unavoidable, using alternatives that no single expert's record can distinguish. Section~\ref{sec:oracle} gives the rate when the prior is known. Both lower bounds use two standard testing facts, recorded here once.
+
+\paragraph{Two testing facts.} (i) \emph{Two hypotheses.} If two laws of the training sample have relative entropy at most $D$, then any test, randomised or not, errs with probability at least $e^{-D}/4$ under one of them. Indeed the Bhattacharyya affinity $A$ of the two laws satisfies $A^2\ge e^{-D}$ by Jensen's inequality, and the larger error is at least $(1-\sqrt{1-A^2})/2\ge A^2/4$. (ii) \emph{Many independent bits} (Assouad's method). Suppose the laws $P_\theta$ are indexed by $\theta\in\{-1,1\}^b$ and that flipping any one coordinate changes the training law by total variation at most $1/4$. Put the uniform prior on $\theta$. For any estimator and any decoding of $\theta$ from it, each bit is decoded wrongly with probability at least $(1-1/4)/2=3/8$, so the number $H$ of wrong bits satisfies $\E H\ge3b/8$; as $H\le b$, $\PP\{H\ge b/8\}\ge2/7$. Hence some $\theta$ has $\PP_\theta\{H\ge b/8\}\ge2/7$.
+
+\subsection{Conditional independence and confidence}\label{sec:conf}
+We give an explicit version of the two-point argument of Lin and Chen~\cite[Appendix~D.1]{lc}, with constants uniform in $n$.
+
+\paragraph{The family.} For $z\in[1/4,1/2]$ let $p_z=(1-z/n)/2$ be the prior. Given $Y=1$, every expert reports $1/2$. Given $Y=0$, each expert independently reports $1/2$ with probability $u_z=p_z/(1-p_z)$ and $0$ otherwise. By Bayes' rule these are the experts' true posteriors, and the reports are conditionally independent. At the profile $r_*$ where every expert reports $1/2$, which has probability at least $p_z\ge3/8$,
+\[
+ h_z(r_*)=(1+u_z^{n-1})^{-1}
+     =\sig\!\Big((n-1)\log\frac{n+z}{n-z}\Big).
+\]
+Using $\log((1+x)/(1-x))\le2x/(1-x)$, the argument of $\sig$ lies in $[0,1]$, and its derivative in $z$ is $2n(n-1)/(n^2-z^2)\ge1$. Since the derivative of $\sig$ on $[0,1]$ is at least $e/(1+e)^2>1/6$, we get $h_{z+d}(r_*)-h_z(r_*)\ge d/6$. The relative entropy between the one-case laws for parameters $z$ and $z+d$ in $[1/4,1/2]$ is at most $18d^2$: the prior contributes at most $2d^2/n^2$, and each of the $n$ conditional report laws contributes at most the squared difference of the $u$-parameters divided by $u(1-u)$, where $|u_z'|\le2/n$, $u_z\ge3/5$ and $1-u_z\ge2/(5n)$.
+
+\paragraph{The bound.} Take $z=1/4$ and $d=\min\{1/4,\sqrt{\log(1/(8\delta))/(18T)}\}$. Given any estimator, decide between the two parameters by asking which of the two values of $h(r_*)$ its prediction at $r_*$ is closer to. Whenever this test errs, the excess risk is at least $(3/8)(d/12)^2=d^2/384$. By testing fact~(i) with $D=18Td^2\le\log(1/(8\delta))$, the test errs with probability at least $2\delta>\delta$ under one of the two laws. Since $\log(1/(8\delta))\ge\frac25\log(1/\delta)$ for $\delta\le1/32$,
+\[
+ r_T(\eta,\delta)\ge \tfrac{1}{17280}\min\{1,\log(1/\delta)/T\}\quad\text{for every }\eta\ge0 .
+\]
+
+\subsection{Interactions invisible to each individual expert}\label{sec:interact}
+Suppose $\eta>0$. We construct alternatives on one fixed grid of calibrated reports that differ only in two-way interactions. Every alternative has the same prior, the same calibration curve for each expert and the same distribution of report vectors, so a learner told all of these still cannot tell the alternatives apart without outcomes.
+
+\paragraph{A conditionally independent baseline.} Let $[m]=\{1,\ldots,m\}$, $L=2^{\lceil\log_2(8n)\rceil}$, $M=2^{\lceil\log_2 m\rceil}$ and $w_j=(2j-m-1)/(LM)$ for $j\in[m]$, so that $\sum_jw_j=0$ and $|w_j|\le1/(8n)$. Under the baseline law $Q$ the outcome is a fair coin, and given $Y=1$ (respectively $Y=0$) the $n$ symbols $X_i\in[m]$ are independent with $\PP(X_i=j)=(1+w_j)/m$ (respectively $(1-w_j)/m$). Put
+\[
+ A_\pm(x)=\prod_{i=1}^n(1\pm w_{x_i}),\qquad
+ B(x)=\frac{A_+(x)+A_-(x)}{2},\qquad h_0(x)=\frac{A_+(x)}{2B(x)}.
+\]
+Then $Q(X=x)=B(x)/K$ and $h_0(x)=Q(Y=1\mid X=x)$. Both products and $B(x)$ lie in $[7/8,e^{1/8}]\subset[7/8,8/7]$, so $49/113\le h_0\le64/113$. Expert $i$ reports $(1+w_j)/2$ when $X_i=j$. Consecutive report values are $1/(LM)$ apart and all are multiples of $1/(2LM)$, so they need only $O(\log(nm))$ binary digits, independently of $T$, $\delta$ and $\eta$. Because the report map is injective, conditioning on reports is the same as conditioning on symbols.
+
+\paragraph{Hidden signs.} Pair consecutive symbols $\{1,2\},\{3,4\},\ldots$ in the first two coordinates, leaving the last symbol unpaired when $m$ is odd. Each choice of a pair in coordinate~1, a pair in coordinate~2 and values $x_3,\ldots,x_n$ gives a four-cell block $D$; there are $b=\lfloor m/2\rfloor^2m^{n-2}\ge K/9$ disjoint blocks. On each block use the $2\times2$ sign pattern $s=(+1,-1;-1,+1)$, the classical move that preserves all row and column sums. For signs $\theta\in\{-1,1\}^b$ and
+\[
+a^2=\min\{1/64,\ \eta/16,\ K/(2048T)\},
+\]
+define $P_\theta$ by keeping the law of $X$ equal to $Q_X$ and setting
+\[
+ h_\theta(x)=P_\theta(Y=1\mid X=x)=
+ \begin{cases}
+ h_0(x)+a\theta_D s(x)/B(x),&x\in D,\\
+ h_0(x),&x\text{ in no block}.
+ \end{cases}
+\]
+Since $a/B(x)\le1/7$, all these probabilities lie in $[1/4,3/4]$.
+
+\paragraph{Nothing marginal changes.} The joint mass at $(x,1)$ changes by exactly $a\theta_Ds(x)/K$, and the mass at $(x,0)$ by its negative: dividing by $B(x)$ cancels the cell weight. Fixing the value of any single coordinate and summing over the others, each block contributes either nothing or two cells with opposite signs, so the perturbation sums to zero. Hence every pair law $(X_i,Y)$, and so every expert's calibration curve, agrees with $Q$, as do the prior and the law of $X$ (and so of $R$). It follows that $Q$ is exactly the conditional-product projection of each $P_\theta$, and so $I(P_\theta)=\KL(P_\theta\|Q)$. Using $B\ge7/8$ and the bound $\KL(\mathrm{Bern}(a')\|\mathrm{Bern}(b'))\le(a'-b')^2/(b'(1-b'))$,
+\[
+ I(P_\theta)
+ \le \sum_{x}\frac{B(x)}{K}\cdot\frac{16}{3}\cdot\frac{a^2}{B(x)^2}
+ \le16a^2\le\eta.
+\]
+
+\paragraph{The bound.} Flipping one sign changes four conditional probabilities by $2a/B(x)$. The one-case relative entropy is then at most $128a^2/K$, and over $T$ cases at most $1/16$, so by Pinsker's inequality the total variation is below $1/4$. Decode each sign by choosing, on its block, the closer of its two possible conditional-probability vectors in the $L^2$ norm weighted by $Q_X$. The squared distance between the two vectors is $(4a^2/K)\sum_{x\in D}B(x)^{-1}\ge14a^2/K$, so a wrongly decoded sign costs at least a quarter of this, at least $3a^2/K$, in excess risk. By testing fact~(ii), some sign vector incurs at least $b/8$ errors, hence excess risk at least $3ba^2/(8K)\ge a^2/24$, with probability at least $2/7>\delta$. Therefore
+\[
+ r_T(\eta,\delta)\ge \tfrac{1}{24}\min\{1/64,\eta/16,K/(2048T)\}\ge\tfrac{1}{49152}\min\{1,\eta,K/T\}.
+\]
+
+\paragraph{Proof of the lower bound in Theorem~\ref{th:main}.} The case $\eta=0$ needs only Section~\ref{sec:conf}. Otherwise take the larger of the two bounds and use $\max(x,y)\ge(x+y)/2$ and $\min(1,x)+\min(1,y)\ge\min(1,x+y)$: this gives $r_T\ge b_T/98304\ge2^{-17}b_T$. \qed
+
+\paragraph{A small example.} For $m=n=2$ both experts in the hard family report $31/64$ or $33/64$. Each of the two profiles where the experts agree has probability $1025/4096$, and each where they disagree has probability $1023/4096$. At the profile where both report $31/64$, the baseline posterior is $961/2050$ and the two alternatives (at $a=1/16$) give $(961\pm128)/2050$. The four profile probabilities and both experts' calibration curves are identical across the alternatives; only the joint posterior differs.
+
+\subsection{The value of knowing the prior}\label{sec:oracle}
+Here the learner is told the prior $P(Y=1)$; this isolates what the unknown prior costs.
+
+\begin{proposition}\label{prop:oracle}
+In the binary model with $n,m\ge2$, $T\ge1$ and $0<\delta\le1/32$, suppose the learner also receives the prior. The minimax radius is then of order
+\begin{equation}\label{eq:oracle}
+ \min\{1,\ \eta,\ (K+\log(1/\delta))/T\}
+\end{equation}
+up to universal constants. The lower bound holds even if the learner also receives the exact law of $R$ and all the pair laws of $(R_i,Y)$, and so cannot be removed by any amount of unlabelled report data.
+\end{proposition}
+\begin{proof}
+For the upper bound, knowing the prior makes the pooling rule $Q(Y=1\mid R=\cdot)$ computable without data; by Lemma~\ref{lem:approx} its excess risk is at most $\eta/2$ deterministically. The learner uses this rule if $\eta/2$ is smaller than the histogram guarantee of Lemma~\ref{lem:hist}, and the histogram otherwise. (Unlike the estimator of Section~\ref{sec:adaptive}, this choice uses $\eta$, as the minimax definition permits.) For the lower bound, the family of Section~\ref{sec:interact} supplies the $\min(1,\eta,K/T)$ part, since its alternatives share the prior, the law of $R$ and all pair laws. For the confidence part, use the same grid with all block signs equal and test ``all $+1$'' against ``all $-1$''. The squared separation between the two regression functions is at least $14ba^2/K\ge14a^2/9$, and the one-case relative entropy is at most $128ba^2/K\le32a^2$. With $a^2=\min\{1/64,\eta/16,\log(1/(8\delta))/(32T)\}$, testing fact~(i) gives an error probability of at least $2\delta$ for one of the two laws, and each error costs at least $(14a^2/9)/4$ in excess risk. Combining the two lower bounds as before gives~\eqref{eq:oracle}.
+\end{proof}
+Comparing~\eqref{eq:oracle} with Theorem~\ref{th:main}: when the prior is unknown, the confidence term $\log(1/\delta)/T$ persists even for conditionally independent experts; when it is known, that term is capped by $\eta$ and vanishes under conditional independence.
+
+\section{Unbounded alphabets and continuous reports}\label{sec:cont}
+This section drops the bound $m$ on the number of signal values. Signals may then take values in arbitrary standard Borel spaces, and $I(P)$ is defined by the same conditional relative entropy.
+
+\begin{proposition}\label{prop:cont}
+Without a bound on the alphabet size, for $n\ge2$, $T\ge1$ and $0<\delta\le1/32$, the minimax radius is of order
+\[
+ \min\{1,\ \eta+T^{-1}\log(1/\delta)\}
+\]
+up to universal constants. For $\eta>0$ the term of order $\min(1,\eta)$ is necessary even for laws in which the reports are unconditionally independent and each is continuously and uniformly distributed.
+\end{proposition}
+\begin{proof}
+\emph{Upper bound.} Each $R_i$ is calibrated, so for $0<p<1$ the laws $P_{R_i\mid 1}$ and $P_{R_i\mid 0}$ have densities $r_i/p$ and $(1-r_i)/(1-p)$ with respect to the law of $R_i$. Multiplying these densities under the conditional-product projection $Q$ gives the same pooling formula, including the boundary cases treated in Section~\ref{sec:upper}. If $I(P)<\infty$ then $P\ll Q$ and Lemma~\ref{lem:approx} holds. The compactified offset family satisfies the interval version of Lemma~\ref{lem:chain}, so the least-squares pooling fit alone has risk $O(\eta+\log(1/\delta)/T)$; the trivial bound $\cR_P\le1$ covers $I(P)=\infty$.
+
+\emph{Lower bound.} The conditionally independent laws of Section~\ref{sec:conf} give the confidence term. For the dependence term, use the construction of Section~\ref{sec:interact} with $m$ so large that $m^n\ge2048T$, which gives $c\min(1,\eta)$. To obtain continuous reports, draw $X$ uniformly from $[0,1]^n$, cut each coordinate into $m$ equal intervals with $m$ even, and use the interval indices to form the same four-cell blocks. Take the baseline $h_0(x)=1/2+(a/n)\sum_i(2x_i-1)$, add $a\theta_Ds$ on each cell of each block, and take $a^2=\min\{1/64,\eta/16,m^n/(2048T)\}$. Given any one coordinate, the perturbation still averages to zero, so expert $i$'s posterior is $R_i=1/2+(a/n)(2X_i-1)$. These reports are independent and uniformly distributed on an interval, and together they determine $X$. Each block has probability $4/m^n$, and the two alternatives for a block differ by $2a$ on it, so decoding by the nearer regression function in the block's $L^2$ norm gives the same separation and testing bounds as on the finite grid. Finally, the law in which $X$ is uniform and $Y$ is an independent fair coin is conditionally a product, and the conditional-product projection minimises the relative entropy to such laws (expand the log-density and collect the prior and marginal terms). So $I(P)\le\KL(P\|U\otimes\mathrm{Bern}(1/2))\le4\E(h_\theta-1/2)^2\le16a^2\le\eta$.
+\end{proof}
+For each fixed $\eta>0$ this shows that no learning rule is uniformly consistent over the whole class. The least favourable law changes with $T$; the proposition says nothing about convergence for a single fixed law.
+
+\section{Finitely many outcomes}\label{sec:multi}
+This section extends the results from yes/no events to an outcome $Y\in\{1,\ldots,k\}$ with $k\ge2$. Each expert now reports a full probability vector $R_\ell=(R_{\ell1},\ldots,R_{\ell k})$ with $R_{\ell j}=P(Y=j\mid S_\ell)$. Write $p(r)=(P(Y=j\mid R=r))_j$ and $e_Y$ for the $Y$-th unit vector. Write $\pi_j=P(Y=j)$ for the prior of outcome $j$. For the vector Brier loss $\|f(R)-e_Y\|_2^2$ the excess risk is $\E\|f(R)-p(R)\|_2^2\le2$. Lin and Chen~\cite[Section~6 and Appendix~E]{lc} studied this model. We first give an explicit bound under exact conditional independence, then a lower bound, a comparison, and the full dependence interpolation for fixed $k$.
+
+\begin{theorem}\label{th:multi}
+Under exact conditional independence of the reports given $Y$, there is a learning rule for which, with probability at least $1-\delta$,
+\[
+ \E\|\widehat f(R)-p(R)\|_2^2
+ \le \min\!\left\{2,\ \frac{32}{T}
+ \left[\binom{k}{2}\log3+k\log(1/\delta)\right]\right\}.
+\]
+The bound holds for arbitrary standard Borel signals and needs no lower bound on class probabilities or report coordinates.
+\end{theorem}
+
+\begin{proof}
+The idea is to learn, for each pair of outcomes, the posterior odds between them using only the cases whose outcome is in that pair, and then to reconcile the pairwise answers into one probability vector.
+
+\emph{Pairwise likelihood.}
+For a pair $e=\{i,j\}$ with $i<j$, put $p_e=p_i+p_j$. On $\{p_e>0\}$, the probability of outcome $i$ given $R$ and $Y\in e$ is $p_i/p_e$. When the priors $\pi_i,\pi_j$ are both positive, conditional independence and calibration give
+\[
+ g_{e,b_*}(r)=\sig\!\left(b_*+\sum_{\ell=1}^n\log
+                 \frac{r_{\ell i}}{r_{\ell j}}\right),\qquad
+ b_*=-(n-1)\log(\pi_i/\pi_j),
+\]
+because the law of $R_\ell$ given outcome $i$ has density $r_{\ell i}/\pi_i$ with respect to the law of $R_\ell$; multiply the densities and cancel. If one of the two products vanishes and the other does not, the pair probability is forced to the corresponding endpoint for every $b$; if both vanish, then $p_e=0$ almost surely there and we predict $1/2$. When a prior vanishes, the same conventions give the correct law wherever $p_e>0$.
+
+Using the training cases with $Y\in e$, maximise the Bernoulli log-likelihood over the single offset $b\in[-\infty,\infty]$, with endpoint predictions given by limits. The log-likelihood is concave in $b$ and attains its maximum on the compactified line, also when only one label was observed; fix a measurable tie rule, also for pairs with no cases. Write $w_e(r)=(\sqrt{g_{e,\hat b}(r)},\sqrt{1-g_{e,\hat b}(r)})$, $u=(\sqrt{p_1},\ldots,\sqrt{p_k})$ and $u_e=(u_i,u_j)$, and define
+\[
+ X_e=T\,\E_R\left[p_e\,
+   \big\|u_e/\sqrt{p_e}-w_e\big\|_2^2\right],
+\]
+with a zero summand where $p_e=0$. The expectation is over a fresh report vector, for fixed training data.
+
+\emph{Joint tails for disjoint pairs.}
+For a set $M$ of pairwise disjoint pairs (a matching), a subset $J\subseteq M$ and numbers $x_e>0$,
+\begin{equation}\label{eq:multitail}
+ \PP\{X_e>x_e\ \text{for all } e\in J\}\le
+       2^{|J|}\exp\!\left(-\tfrac12\sum_{e\in J}x_e\right).
+\end{equation}
+For one pair, the population error $X_e/T$, as a function of $b$, is continuous and weakly increasing away from $b_*$ on either side: at each input, the two square-root vectors lie on the unit quarter-circle with angle monotone in $b$. On each side where the error can exceed $x_e/T$, choose a deterministic offset at which it equals $x_e/T$. If the maximum-likelihood offset lies beyond it, concavity gives a training likelihood at the boundary offset at least that at $b_*$. Pairs with a null prior have zero error and need no boundary.
+
+Choose a side for each pair in $J$. Define the one-case likelihood ratio as the ratio of the boundary to the true conditional label probability when $Y\in e$ for some $e\in J$, and one otherwise; since the pairs are disjoint, at most one pair is involved. The expectation of the square root of this ratio is $1-\sum_{e\in J}x_e/(2T)$, because the affinity of two laws on two points is one minus half their squared square-root distance. Over $T$ independent cases the expectation is at most $\exp(-\sum_{e\in J}x_e/2)$, while on the joint crossing event the product of the training likelihood ratios is at least one. Markov's inequality and a union bound over the $2^{|J|}$ choices of sides give~\eqref{eq:multitail}.
+
+Expanding $\prod_{e\in M}e^{X_e/4}=\prod_{e\in M}[1+\int_0^{X_e}e^{x/4}\,dx/4]$ and applying~\eqref{eq:multitail} with Tonelli's theorem gives $\E\exp(\sum_{e\in M}X_e/4)\le\sum_{J\subseteq M}2^{|J|}=3^{|M|}$. Colour the pair $\{i,j\}$ by $i+j\pmod k$; each colour class is a matching, and there are $k$ classes. Hölder's inequality across the classes yields
+\[
+ \E\exp\!\left(\frac{1}{4k}\sum_e X_e\right)
+       \le 3^{\binom{k}{2}/k},
+\]
+so with probability at least $1-\delta$ we have $\sum_eX_e\le4[\binom{k}{2}\log3+k\log(1/\delta)]$.
+
+\emph{Reconstruction.}
+At a fresh input, minimise $F(v)=\sum_e\det(v_e,w_e)^2$ over nonnegative unit vectors $v\in\mathbb R^k$ and predict $\widehat f_j=v_j^2$. A measurable minimiser exists by compactness and continuity; equivalently one may take the absolute values of an eigenvector for the least eigenvalue of the associated symmetric matrix. For any unit two-vector $w$, writing two vectors in the basis $w,w^\perp$ gives
+\[
+ \det(u_e,v_e)^2\le
+  2\|v_e\|^2\det(u_e,w_e)^2+
+  2\|u_e\|^2\det(v_e,w_e)^2 .
+\]
+By Lagrange's identity, $1-\langle u,v\rangle^2=\sum_e\det(u_e,v_e)^2\le2[F(u)+F(v)]\le4F(u)$. By Cauchy--Schwarz the squared total variation between $p$ and $\widehat f$ is at most $1-\langle u,v\rangle^2$, and the vector squared error is at most twice the squared total variation, because the positive and negative parts of $\widehat f-p$ have equal sums. Finally $\det(u_e,w_e)^2\le p_e\|u_e/\sqrt{p_e}-w_e\|^2$, using $1-z^2\le2(1-z)$ for the inner product $z$ of two unit vectors. Hence the excess risk is at most $8\sum_eX_e/T$. Least-squares coupling of pairwise probabilities has precedents in Wu, Lin and Weng~\cite{wulw}; working in square-root coordinates gives the risk comparison above up to the boundary of the simplex.
+\end{proof}
+
+\begin{proposition}\label{prop:multilower}
+If each expert's signal takes at least $2\lfloor k/2\rfloor$ values (or the alphabet is unrestricted), the minimax vector Brier radius under exact conditional independence is at least
+\[
+ c\min\{1,[k+\log(1/\delta)]/T\},\qquad 0<\delta\le1/32,
+\]
+for a universal $c>0$.
+\end{proposition}
+\begin{proof}
+Put $L=\lfloor k/2\rfloor$. Choose a stratum uniformly from $L$ disjoint pairs of outcomes, giving prior zero to any remaining outcome, and let all experts observe the stratum. Within stratum $j$, run the binary experiment of Section~\ref{sec:conf} on its pair of outcomes, with parameter $z_j\in\{1/4,1/4+d\}$. Each expert has two possible reports per stratum, and these reports give probability zero to outcomes outside the stratum's pair. Conditional independence holds globally because the outcome determines the stratum.
+
+Take $d^2=\min\{1/16,L/(288T)\}$. Changing one stratum's bit changes the training law by relative entropy at most $18Td^2/L\le1/16$, so testing fact~(ii) of Section~\ref{sec:lower} applies: with independent uniform bits, at least $L/8$ bits are decoded wrongly with probability at least $2/7$ for some parameter vector. Decode each bit by comparing the predicted probability of the stratum's first outcome, at the stratum's all-$1/2$ report profile, with its two possible true values; these differ by at least $d/6$, and the profile has probability at least $3/8$ within the stratum. Each wrong bit therefore costs at least $d^2/(384L)$, which proves the bound with $L$ in place of $k+\log(1/\delta)$. Combining it with the binary confidence bound, embedded in two outcomes, and $L\ge k/3$ gives the claim.
+\end{proof}
+
+\paragraph{Comparison with Lin and Chen.} Lin and Chen's Theorem~6.1 gives, under conditional independence, a sample complexity of $O\big((k\log k\log(1/\eps)+\log(1/\delta))/\eps^2\big)$. Theorem~\ref{th:multi} gives $O\big((k^2+k\log(1/\delta))/\eps\big)$. Up to constants the new bound is smaller whenever $\eps\le1/k$ (and, at fixed $\delta$, whenever $\eps\lesssim\log k\log(1/\eps)/k$), which covers every fixed $k$ as $\eps\to0$. For many outcomes and accuracy well above $1/k$ their bound can be smaller, so the best known upper bound is the minimum of the two. Against the lower bound of Proposition~\ref{prop:multilower}, a factor of order $k$ remains for rich alphabets and fixed confidence; closing it is open (Section~\ref{sec:disc}). For arbitrary dependence, Lin and Chen's upper bound is $O((km^n+\log(1/\delta))/\eps^2)$; Proposition~\ref{prop:multirobust} below removes both the factor $k$ and a factor $1/\eps$.
+
+\subsection{Dependence and the number of profiles}
+The full dependence interpolation also extends to fixed $k$. For classes with $\pi_j>0$, $I_j=\KL(P_{R\mid j}\|\bigotimes_\ell P_{R_\ell\mid j})$; set $\pi_jI_j=0$ when $\pi_j=0$, so that $I(P)=\sum_j\pi_jI_j$. Keep $K=m^n$.
+
+\begin{proposition}\label{prop:multirobust}
+For each fixed $k\ge2$, Theorem~\ref{th:main} holds for the vector Brier risk, with constants depending on $k$. For arbitrary dependence ($\eta=\infty$) the constants can be chosen independently of $k$. With unbounded report alphabets, the analogue of Proposition~\ref{prop:cont}, $\min\{1,\eta+T^{-1}\log(1/\delta)\}$, holds up to factors depending only on $k$.
+\end{proposition}
+\begin{proof}
+\emph{The structured candidate.} For each pair $e=\{i,j\}$ write $w=\pi_i+\pi_j$, $p_e(r)=p_i(r)+p_j(r)$ and $g_e^*=p_i/p_e$ on $\{p_e>0\}$. Ignore pairs with $w=0$ in the analysis, and allow any fit if a pair has no training cases. Given $Y\in e$, replacing the report laws within each of the two classes by the product of their marginals costs $(\pi_i I_i+\pi_j I_j)/w$ in relative entropy, and the resulting posterior lies in the offset family $g_{e,b}$ above. The chain rule and Pinsker's inequality give
+\[
+ w\inf_b \E[(g_{e,b}-g_e^*)^2\mid Y\in e]\le (\pi_i I_i+\pi_j I_j)/2 .
+\]
+For each pair fit the offset by least squares on the training cases with $Y\in e$. Given their number $N$, these cases have the pair-conditional law. If $sw\ge8t$, the binomial lower tail gives $N\ge sw/2$ except with probability $e^{-t}$, and Lemma~\ref{lem:chain}, applied conditionally, gives
+\[
+ \E_R\, p_e(R)\,|\widehat g_e-g_e^*|^2
+ \le C[\pi_iI_i+\pi_jI_j+t/s].
+\]
+If $sw<8t$, the left side is at most $w<8t/s$. With $t=\log(8k^2/\delta)$, a union bound gives this inequality for every pair with probability at least $1-\delta/4$. Here the pair prediction uses the whole report vector; under dependence the true pair posterior need not depend only on the reported odds.
+
+At prediction time use the probability-coordinate least-squares coupling of Wu, Lin and Weng~\cite{wulw}: for $i<j$ set $L_{ij}(z)=z_i-(z_i+z_j)\widehat g_{\{i,j\}}$ and choose a measurable minimiser $z$ of $\sum_{i<j}L_{ij}(z)^2$ over the probability simplex. For any $d$ with $\sum_i d_i=0$ and any $i,j$ with $d_i,d_j$ of opposite signs, $|L_{ij}(d)|\ge\min(|d_i|,|d_j|)$, since $L_{ij}(d)$ is then a convex combination of $|d_i|$ and $|d_j|$ up to sign. For a positive $d_i$, the sum of $\min(d_i,|d_j|)$ over the negative $d_j$ is at least $d_i$, because the total negative mass is at least $d_i$. Cauchy--Schwarz, and the same argument for the negative coordinates, give
+\[
+ \|d\|^2\le 2k\sum_{i<j}L_{ij}(d)^2 .
+\]
+Apply this to $d=z-p$. Since $L_{ij}(p)=p_e(g_e^*-\widehat g_e)$, the optimality of $z$ and the triangle inequality give $\|z-p\|^2\le8k\sum_e p_e^2|\widehat g_e-g_e^*|^2$. As $p_e^2\le p_e$ and each class lies in $k-1$ pairs, this candidate has excess risk at most $C[k^2 I(P)+k^3t/s]$.
+
+\emph{The histogram candidate, with no dependence on $k$.} Predict the vector of empirical outcome frequencies in each training report vector, and any fixed probability vector on unseen ones. Let $d_x$ and $N_x$ be the population mass and training count of report vector $x$, and call $x$ \emph{bad} if $N_x<sd_x/2$. For a fixed set $A$ of report vectors the total count is binomial with mean $s\,d(A)$; the lower-tail inequality and a union bound over the at most $2^K$ sets show that the bad vectors have total mass at most $8(K\log2+u)/s$ with probability $1-e^{-u}$. Their contribution to the squared error is at most twice their mass.
+
+Given the design, put $Z_x=N_x\|\widehat p_x-p_x\|^2$ for each good $x$ with $d_x>0$. The conditional mean of $\|\widehat p_x-p_x\|$ is at most $1/\sqrt{N_x}$, since the class variances sum to at most $1/N_x$, and changing one label changes this norm by at most $\sqrt2/N_x$. McDiarmid's bounded-differences inequality gives $\PP(Z_x>v\mid\text{design})\le e\cdot e^{-v/4}$ (for $v\ge4$ use $\sqrt v-1\ge\sqrt v/2$; for smaller $v$ the bound exceeds one). Hence $\E[\exp(Z_x/8)\mid\text{design}]\le1+e$. The $Z_x$ are conditionally independent, so with conditional probability at least $1-e^{-u}$ their sum is at most $8[K\log(1+e)+u]$. On good vectors $d_x/N_x\le2/s$, so the histogram's excess risk is $O((K+u)/s)$, uniformly in $k$.
+
+\emph{Selection and lower bounds.} Choose between the two candidates by validation as in Section~\ref{sec:adaptive}. For probability vectors the excess loss has absolute value at most two and variance at most eight times its mean, using $\|f+h-2e_Y\|\le2\sqrt2$; the same Bernstein argument completes the upper bounds. For arbitrary dependence the histogram alone suffices, and for unbounded alphabets the structured candidate alone, with the trivial bound two when $\eta=\infty$. For every lower bound, embed the corresponding binary experiment by giving all other outcomes prior zero and report probability zero. The squared error in the first coordinate is at most the vector squared error, so all binary lower bounds, including the continuous construction, apply.
+\end{proof}
+
+\section{Discussion and open problems}\label{sec:disc}
+This section explains what the results mean for someone combining forecasts, states the limits of the model, and lists open problems.
+
+\paragraph{A practical reading.} The rate says that an aggregator facing $T$ resolved cases should rely on the multiplicative pooling formula, with a fitted prior correction, until $T$ is of order $m^n/\eta$, and only then try to learn the joint structure of the reports. Two features of the analysis matter in practice. First, $\eta$ cannot be estimated from the reports alone or from any single expert's track record: the alternatives of Section~\ref{sec:interact} agree on all of these. The validation step is therefore what protects the user, since it compares the two candidates on held-out outcomes without needing to know $\eta$. Second, the histogram candidate is useful only when the number of resolved cases is comparable to the number of report profiles that actually occur; with many experts or fine-grained reports, the pooling rule will usually be chosen.
+
+\paragraph{Scope.} The results concern excess risk relative to the Bayesian aggregator that sees the full report vector, which can be weaker than an aggregator that sees the signals themselves~\cite{lc}. Conditionally independent reports can carry almost no information about the event and still permit accurate learning of their posterior; conversely, each expert can be perfectly calibrated while the joint reports contain information that no single expert sees. The reports are assumed to be exact posteriors. The finite hard family uses reports spaced $1/(LM)\le1/(8nm)$ apart; real forecasters often round to a percentage point, which is coarser than this at least whenever $nm\ge13$. Rounding breaks exact calibration and with it the pooling formula; the histogram candidate is unaffected, since it never uses calibration. Strategic misreporting, dependent training cases and other loss functions, such as the logarithmic score, need separate analyses. No empirical forecast data enter the bounds.
+
+\paragraph{Related models.} Babichenko and Garber~\cite{bg} study learning in partial-evidence environments, in which experts see overlapping subsets of conditionally independent signals; Lin and Chen note that a lower bound for that model is open. Guo, Li and Mu~\cite{glm} study robust aggregation of calibrated forecasts with online feedback and a contextual hindsight benchmark, and Chen, Peng and Tang~\cite{cpt} study prior-agnostic robust aggregation of a single case under different knowledge assumptions. Here, by contrast, independent resolved cases are available and the benchmark is the Bayesian aggregator on the next case.
+
+\paragraph{Open problems.}
+\begin{enumerate}
+\item \emph{Many outcomes.} Under conditional independence, the dependence on the number $k$ of outcomes lies between $k$ and $k^2$ (Proposition~\ref{prop:multilower} and Theorem~\ref{th:multi}). The posterior is a multinomial-logistic model in $k-1$ unknown offsets, so a joint maximum-likelihood fit plausibly achieves order $(k+\log(1/\delta))/T$. The ordering argument of Lemma~\ref{lem:chain} is one-dimensional, however, and no log-free analysis of the joint fit is known.
+\item \emph{Rounded or noisy reports.} How does the approximation term in Lemma~\ref{lem:approx} degrade when reports are rounded to a grid of width $\tau$, and what precision does the lower-bound family need?
+\item \emph{Extremised pooling.} Practical aggregators often fit a slope as well as an offset in the pooling formula, to correct for experts who share information. A two-parameter family is no longer totally ordered, so Lemma~\ref{lem:chain} does not apply directly.
+\item \emph{Partial evidence.} Determine the sample complexity of the partial-evidence model of Babichenko and Garber, for which the dependence parameter $\eta$ may be bounded explicitly.
+\end{enumerate}
+
+\section{Reproducibility and AI-use statement}\label{sec:repro}
+The proofs above are complete and do not depend on computation. The accompanying script \texttt{code/verify.py} (standard library only, exact rational arithmetic) checks the finite algebra of the constructions: for $(n,m)\in\{(2,2),(2,3),(3,4),(5,3),(2,7)\}$ it verifies the report grid, the calibration of every expert, the unchanged prior and report law, the conditional-independence structure of the baseline, the separation and divergence constants of Sections~\ref{sec:interact} and~\ref{sec:oracle}, the identity $I(P_\theta)=\KL(P_\theta\|Q)$ and the worked example; the constants of Section~\ref{sec:conf} for $n\in\{2,3,10,100,1000\}$; the cell-level identities of the continuous construction; the coupling inequalities of Section~\ref{sec:multi} on random instances; and the algebra of the explicit lower constant. The script \texttt{code/simulate.py} runs the estimator of Section~\ref{sec:adaptive} on two small laws as an illustration, fitting the offset on a grid of $2401$ values in $[-12,12]$ and averaging the exact excess risk over $40$ repetitions. In one run on a conditionally independent law with $n=3$ and $m=4$, $T$ times the mean excess risk stayed between $0.39$ and $0.43$ for $T=250$, $1000$ and $4000$.
+
+This manuscript was prepared with the assistance of AI systems, which were used for drafting, proof checking, literature search and computation. The author is responsible for its content.
+
+\begin{thebibliography}{99}
+\bibitem{agrawal} Agrawal, R. (2020). Finite-sample concentration of the multinomial in relative entropy. \emph{IEEE Transactions on Information Theory, 66}(10), 6297--6302. \url{https://doi.org/10.1109/TIT.2020.2996134}
+\bibitem{bg} Babichenko, Y., \& Garber, D. (2021). Learning optimal forecast aggregation in partial evidence environments. \emph{Mathematics of Operations Research, 46}(2), 628--641. \url{https://doi.org/10.1287/moor.2020.1080}
+\bibitem{baraud} Baraud, Y., \& Chen, J. (2024). Robust estimation of a regression function in exponential families. \emph{Journal of Statistical Planning and Inference, 233}, 106167. \url{https://doi.org/10.1016/j.jspi.2024.106167}
+\bibitem{bbm} Bartlett, P. L., Bousquet, O., \& Mendelson, S. (2005). Local Rademacher complexities. \emph{The Annals of Statistics, 33}(4), 1497--1537. \url{https://doi.org/10.1214/009053605000000282}
+\bibitem{bordley} Bordley, R. F. (1982). A multiplicative formula for aggregating probability assessments. \emph{Management Science, 28}(10), 1137--1148. \url{https://doi.org/10.1287/mnsc.28.10.1137}
+\bibitem{bousquet} Bousquet, O. (2002). A Bennett concentration inequality and its application to suprema of empirical processes. \emph{Comptes Rendus Math\'ematique, 334}(6), 495--500. \url{https://doi.org/10.1016/S1631-073X(02)02292-6}
+\bibitem{cpt} Chen, Z., Peng, C., \& Tang, W. (2026). \emph{Prior-agnostic robust forecast aggregation} [Preprint]. arXiv:2604.24517. \url{https://arxiv.org/abs/2604.24517}
+\bibitem{glm} Guo, X., Li, Y., \& Mu, Y. (2026). \emph{Robust aggregation of calibrated forecasts} [Preprint]. arXiv:2606.31020. \url{https://arxiv.org/abs/2606.31020}
+\bibitem{kol} Koltchinskii, V. (2006). Local Rademacher complexities and oracle inequalities in risk minimization. \emph{The Annals of Statistics, 34}(6), 2593--2656. \url{https://doi.org/10.1214/009053606000001019}
+\bibitem{lc} Lin, T., \& Chen, Y. (2023). Sample complexity of forecast aggregation. \emph{Advances in Neural Information Processing Systems 36}, 36053--36093. \url{https://doi.org/10.52202/075280-1564}; arXiv:2207.13126.
+\bibitem{poster} Lin, T., \& Chen, Y. (2023). \emph{Sample complexity of forecast aggregation} [Conference poster, NeurIPS 2023]. \url{https://tao-l.github.io/files/NeurIPS-23-forecast-aggregation-poster.pdf}
+\bibitem{wulw} Wu, T.-F., Lin, C.-J., \& Weng, R. C. (2004). Probability estimates for multi-class classification by pairwise coupling. \emph{Journal of Machine Learning Research, 5}, 975--1005. \url{https://www.jmlr.org/papers/v5/wu04a.html}
+\end{thebibliography}
+\end{document}

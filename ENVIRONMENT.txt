@@ -1,0 +1,14 @@
+Release replay environment (25 November 2026, macOS arm64 host)
+Interpreters (printed inside the run, not assumed):
+- `uv run --no-project --python 3.12 python3` resolved to CPython 3.14.7 through the host's python3 shim; verify.py and
+  simulate.py ran under it. verify.py was also run under CPython 3.12.11 with the same result.
+Packages: none. requirements.txt states standard library only (Python 3.10 or later).
+Working directory: the package root. Flags: python3 -I -B -O. PYTHONDONTWRITEBYTECODE=1.
+Run time on the release host: verify.py under 1 s, simulate.py about 6 s.
+GitHub CI: ubuntu-latest, actions/setup-python 3.12. One blocking job: manifest, verify.py and simulate.py under -O,
+comparison with the recorded outputs, negative control, working tree unchanged.
+Comparison policy (declared before tagging; the same in CI, README.md and REPLAY_RECEIPT.md):
+- results/verification.json must be byte-identical on every platform.
+- results/simulation.json must match in structure and non-numeric values exactly, and in numbers within a relative 1e-6.
+- Interpreter versions and timings are not compared.
+On the release platform both output files were byte-identical to the recorded ones.

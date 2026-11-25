@@ -1,0 +1,93 @@
+{
+ "title": "Learning to aggregate Bayesian forecasts: optimal sample complexity under bounded dependence",
+ "upload_type": "publication",
+ "publication_type": "preprint",
+ "description": "<p><strong>Unrefereed research candidate.</strong> Several forecasters each give a probability for the same yes/no event (rain tomorrow, a patient relapsing, an election). Each has seen different evidence and reports honestly. The best combination is the probability of the event given all the reports together, but that depends on how the forecasters' evidence overlaps, which is unknown. An aggregator has to learn it from a track record of past cases with known outcomes. This paper asks how long that track record must be.</p><p><strong>What was known.</strong> Lin and Chen (NeurIPS 2023) set up the model: n experts, each with at most m possible signals, exact calibrated reports, and T past cases. For experts whose evidence is independent given the outcome they showed that between about log(1/&delta;)/&epsilon; and 1/&epsilon;<sup>2</sup> cases are needed for accuracy &epsilon;; for arbitrary dependence, between about m<sup>n&minus;2</sup>/&epsilon; and m<sup>n</sup>/&epsilon;<sup>2</sup>. They conjectured that 1/&epsilon; is the right dependence and asked about the middle ground. Under conditional independence the ideal combination is the classical multiplicative pooling formula (their Lemma 5.1, credited to Bordley).</p><p><strong>Main result.</strong> Let &eta; bound the conditional total correlation of the reports given the outcome: how much the experts share beyond what each knows about the outcome. With failure probability &delta; &le; 1/32, the minimax excess Brier risk is of order min{1, log(1/&delta;)/T + min(&eta;, m<sup>n</sup>/T)}, up to universal constants. So about log(1/&delta;)/&epsilon; cases are needed and suffice for conditionally independent experts, and about (m<sup>n</sup> + log(1/&delta;))/&epsilon; under arbitrary dependence, which raises the earlier m<sup>n&minus;2</sup> lower bound to m<sup>n</sup>. One estimator attains the rate without knowing &eta;: fit the pooling formula, fit a lookup table, and keep whichever does better on held-out cases. The hard examples keep every expert's calibration curve, the prior and the whole distribution of report vectors fixed, so the difficulty lies in interactions that no single expert's track record reveals. Further results: the rate when the prior is known, impossibility of uniform consistency with unbounded report alphabets under any fixed dependence allowance, and an extension to finitely many outcomes.</p><p><strong>Relation to standard tools.</strong> For conditionally independent experts, localised-complexity arguments already give the upper bound up to a factor log T; the new parts there are removing that factor and the matching lower bounds. The main new content is the dependence trade-off and the calibrated worst-case construction.</p><p><strong>Limits.</strong> Reports are exact, honest, calibrated posteriors; rounding to whole percentages is not covered. The bounds are worst case over all laws (a particular group of forecasters may be much easier) and the constants are not optimised. With k outcomes, a factor of about k between the upper and lower bounds remains open.</p><p><strong>Contents.</strong> The paper (LaTeX source and PDF); an exact-arithmetic verification script for the finite algebra of the constructions (9075 checks, standard library) and a small illustrative simulation, with their recorded outputs; the bibliography, a machine-readable index, a research-gate record, a review summary, a replay receipt and SHA-256 sums. Every check exits with an error on failure, also under python -O.</p><p><strong>Assurance.</strong> Written proofs; the scripts check finite algebra only. Internal AI-assisted review only: a combined five-role Claude review, the lead's exact checks with a negative control and a small simulation, one revision round, then a re-review and a proof audit of the new and rewritten proofs. No Astra/Codex review took place. This is not peer review, independent reproduction or formal verification. Creator: Anonymous. Text CC0-1.0; code MIT.</p>",
+ "creators": [
+  {
+   "name": "Anonymous"
+  }
+ ],
+ "access_right": "open",
+ "license": "cc-zero",
+ "version": "0.1.0-candidate",
+ "publication_date": "2026-11-25",
+ "keywords": [
+  "forecast aggregation",
+  "sample complexity",
+  "Bayesian aggregator",
+  "minimax rate",
+  "conditional total correlation",
+  "Brier score",
+  "learning theory",
+  "wisdom of crowds"
+ ],
+ "notes": "Code (*.py and the CI workflow) is MIT; prose, manuscript, recorded outputs and records are CC0-1.0.",
+ "related_identifiers": [
+  {
+   "identifier": "https://github.com/ipitchford/forecast-aggregation-sample-complexity/tree/v0.1.0-candidate",
+   "relation": "isSupplementTo",
+   "scheme": "url"
+  },
+  {
+   "identifier": "https://evidencepress.org/releases/forecast-aggregation-sample-complexity/",
+   "relation": "isDocumentedBy",
+   "scheme": "url"
+  },
+  {
+   "identifier": "10.1109/tit.2020.2996134",
+   "relation": "references",
+   "scheme": "doi"
+  },
+  {
+   "identifier": "10.1287/moor.2020.1080",
+   "relation": "references",
+   "scheme": "doi"
+  },
+  {
+   "identifier": "10.1016/j.jspi.2024.106167",
+   "relation": "references",
+   "scheme": "doi"
+  },
+  {
+   "identifier": "10.1214/009053605000000282",
+   "relation": "references",
+   "scheme": "doi"
+  },
+  {
+   "identifier": "10.1287/mnsc.28.10.1137",
+   "relation": "references",
+   "scheme": "doi"
+  },
+  {
+   "identifier": "10.1016/s1631-073x(02)02292-6",
+   "relation": "references",
+   "scheme": "doi"
+  },
+  {
+   "identifier": "10.1214/009053606000001019",
+   "relation": "references",
+   "scheme": "doi"
+  },
+  {
+   "identifier": "10.52202/075280-1564",
+   "relation": "references",
+   "scheme": "doi"
+  },
+  {
+   "identifier": "arXiv:2207.13126",
+   "relation": "references",
+   "scheme": "arxiv"
+  },
+  {
+   "identifier": "arXiv:2604.24517",
+   "relation": "references",
+   "scheme": "arxiv"
+  },
+  {
+   "identifier": "arXiv:2606.31020",
+   "relation": "references",
+   "scheme": "arxiv"
+  }
+ ]
+}

@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: MIT
+name: Replay
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+jobs:
+  verify:
+    name: Manifest; verify.py under python -O with exact comparison; simulate.py with declared tolerance; negative control
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check MANIFEST.sha256
+        run: sha256sum -c MANIFEST.sha256
+      - name: Run both scripts in a copy of the package (cwd = package root; standard library only)
+        run: |
+          python3 -c 'import sys; print(sys.version)'
+          for d in run neg1; do mkdir -p "$RUNNER_TEMP/$d"; cp -R code results "$RUNNER_TEMP/$d/"; done
+          cd "$RUNNER_TEMP/run"
+          python3 -I -B -O code/verify.py --output results/verification.json | tee verify.out
+          grep -q '9075 checks, 0 failures: PASS' verify.out
+          python3 -I -B -O code/simulate.py --output results/simulation.json | tee simulate.out
+          grep -q '^PASS$' simulate.out
+      - name: Compare with the recorded outputs
+        # verification.json (exact rational checks; deterministic) must be byte-identical. simulation.json: non-numeric
+        # values exactly, numbers within a relative 1e-6 (declared tolerance, also in README.md, ENVIRONMENT.txt and
+        # REPLAY_RECEIPT.md). Interpreter versions are not compared.
+        run: python3 -I .github/ci/compare_outputs.py "$RUNNER_TEMP/run/results" results
+      - name: Negative control under -O (Section 4.1 KL constant 18 replaced by 1)
+        run: |
+          cd "$RUNNER_TEMP/neg1"
+          sed -i 's/check(kl <= 18 \* float(d \* d)/check(kl <= 1 * float(d * d)/' code/verify.py
+          grep -q 'check(kl <= 1 \* float(d \* d)' code/verify.py
+          if python3 -I -B -O code/verify.py --output /dev/null > out.txt 2>&1; then echo "wrong constant not detected"; exit 1; fi
+          grep -q 'FAILED: confidence(n=2) one-case KL' out.txt
+          echo "negative control detected"
+      - name: Working tree unchanged
+        run: test -z "$(git status --porcelain)"

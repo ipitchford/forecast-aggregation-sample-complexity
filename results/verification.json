@@ -1,0 +1,120 @@
+{
+ "checks_run": 9075,
+ "confidence": [
+  {
+   "gap_quarter_to_half": 0.0625,
+   "max_KL_over_d2_on_grid": 2.009368,
+   "n": 2
+  },
+  {
+   "gap_quarter_to_half": 0.07940354,
+   "max_KL_over_d2_on_grid": 1.918725,
+   "n": 3
+  },
+  {
+   "gap_quarter_to_half": 0.1004423,
+   "max_KL_over_d2_on_grid": 1.853902,
+   "n": 10
+  },
+  {
+   "gap_quarter_to_half": 0.10780571,
+   "max_KL_over_d2_on_grid": 1.847606,
+   "n": 100
+  },
+  {
+   "gap_quarter_to_half": 0.10852011,
+   "max_KL_over_d2_on_grid": 1.847544,
+   "n": 1000
+  }
+ ],
+ "continuous": [
+  {
+   "four_second_moment_over_a2": "14/3",
+   "m": 2,
+   "n": 2
+  },
+  {
+   "four_second_moment_over_a2": "14/3",
+   "m": 4,
+   "n": 2
+  },
+  {
+   "four_second_moment_over_a2": "40/9",
+   "m": 4,
+   "n": 3
+  }
+ ],
+ "explicit_lower_constant": {
+  "c": "2^-17",
+  "min_ratio_lower_over_bT": 1.6089176111605636e-05
+ },
+ "failures": [],
+ "grids": [
+  {
+   "I_P": 0.0078485,
+   "K": 4,
+   "chi_square_bound": 0.01565556,
+   "hidden_signs": 1,
+   "m": 2,
+   "n": 2,
+   "report_spacing": "1/32",
+   "worked_example": {
+    "diagonal_profile": "1025/4096",
+    "low_low_alternatives": [
+     "833/2050",
+     "1089/2050"
+    ],
+    "low_low_baseline": "961/2050",
+    "off_diagonal_profile": "1023/4096",
+    "reports": [
+     "31/64",
+     "33/64"
+    ]
+   }
+  },
+  {
+   "I_P": 0.00348563,
+   "K": 9,
+   "chi_square_bound": 0.00695293,
+   "hidden_signs": 1,
+   "m": 3,
+   "n": 2,
+   "report_spacing": "1/64"
+  },
+  {
+   "I_P": 0.00784024,
+   "K": 64,
+   "chi_square_bound": 0.01563932,
+   "hidden_signs": 16,
+   "m": 4,
+   "n": 3,
+   "report_spacing": "1/128"
+  },
+  {
+   "I_P": 0.00348202,
+   "K": 243,
+   "chi_square_bound": 0.00694582,
+   "hidden_signs": 27,
+   "m": 3,
+   "n": 5,
+   "report_spacing": "1/256"
+  },
+  {
+   "I_P": 0.00576423,
+   "K": 49,
+   "chi_square_bound": 0.01149808,
+   "hidden_signs": 9,
+   "m": 7,
+   "n": 2,
+   "report_spacing": "1/128"
+  }
+ ],
+ "multiclass": {
+  "12": "100 random instances",
+  "2": "100 random instances",
+  "3": "100 random instances",
+  "4": "100 random instances",
+  "7": "100 random instances"
+ },
+ "status": "PASS"
+}

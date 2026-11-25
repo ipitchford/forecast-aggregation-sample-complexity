@@ -1,0 +1,265 @@
+{
+ "schemaVersion": "1.0",
+ "provenance": "Compiled 25 November 2026 for 0.1.0-candidate from the dated searches of the internal AI-assisted review (24 November 2026), the source retrieval and reading record, the corpus overlap check, refs.bib, REVIEW_SUMMARY.md and the paper's own positioning (Sections 1 and 7). It records scrutiny performed, not historical priority.",
+ "contributionMap": [
+  {
+   "claim": "Binary model, n experts with at most m signals, exact calibrated reports, T past cases, delta <= 1/32: the minimax excess Brier risk is of order min{1, log(1/delta)/T + min(eta, m^n/T)} for every bound eta on the conditional total correlation, attained by one estimator that does not know eta",
+   "unit": "statement",
+   "paperLocation": "Theorem 1, Sections 2-4",
+   "searches": [
+    {
+     "date": "2026-11-24",
+     "corpus": "arXiv and general web searches up to 24 November 2026 (lead, and separately the editor and domain roles of the internal review); works citing or extending Lin and Chen (NeurIPS 2023, arXiv:2207.13126); Evidence Press corpus (site papers/ and the batch corpus list)",
+     "query": "sample complexity of forecast aggregation; learning the Bayesian aggregator from past cases; Lin Chen conjecture 1/epsilon; conditionally independent experts aggregation sample complexity; robust forecast aggregation; partial evidence aggregation"
+    },
+    {
+     "date": "2026-11-24",
+     "corpus": "the cited works, obtained and read (arXiv versions, publisher pages and the conference poster)",
+     "query": "Lin-Chen arXiv:2207.13126 Theorems 4.1, 5.2, 5.4, 5.5, 6.1, 7.1, Lemma 5.1, Section 7 and Appendix D.1; poster Future Work panel; Agrawal Theorem I.3; Bousquet Theorem 2.3; Wu-Lin-Weng Section 4; Bartlett-Bousquet-Mendelson; Koltchinskii; Baraud-Chen Theorem 1; Babichenko-Garber; Guo-Li-Mu; Chen-Peng-Tang"
+    }
+   ],
+   "closestPriorWork": "Lin and Chen (NeurIPS 2023): bounds for the two endpoints differing by a factor 1/epsilon; the intermediate regime posed as open on their poster",
+   "verdict": "new-in-bounded-search",
+   "verdictNote": "no later work settling the Lin-Chen gap or the dependence interpolation was found"
+  },
+  {
+   "claim": "Endpoint rates: Theta(log(1/delta)/epsilon) under conditional independence and Theta((m^n + log(1/delta))/epsilon) under arbitrary dependence, confirming the Lin-Chen 1/epsilon conjecture for the binary model and raising their m^(n-2) lower bound to m^n",
+   "unit": "statement",
+   "paperLocation": "Corollary 2, Table 1",
+   "searches": [
+    {
+     "date": "2026-11-24",
+     "corpus": "arXiv and general web searches up to 24 November 2026 (lead, and separately the editor and domain roles of the internal review); works citing or extending Lin and Chen (NeurIPS 2023, arXiv:2207.13126); Evidence Press corpus (site papers/ and the batch corpus list)",
+     "query": "sample complexity of forecast aggregation; learning the Bayesian aggregator from past cases; Lin Chen conjecture 1/epsilon; conditionally independent experts aggregation sample complexity; robust forecast aggregation; partial evidence aggregation"
+    },
+    {
+     "date": "2026-11-24",
+     "corpus": "the cited works, obtained and read (arXiv versions, publisher pages and the conference poster)",
+     "query": "Lin-Chen arXiv:2207.13126 Theorems 4.1, 5.2, 5.4, 5.5, 6.1, 7.1, Lemma 5.1, Section 7 and Appendix D.1; poster Future Work panel; Agrawal Theorem I.3; Bousquet Theorem 2.3; Wu-Lin-Weng Section 4; Bartlett-Bousquet-Mendelson; Koltchinskii; Baraud-Chen Theorem 1; Babichenko-Garber; Guo-Li-Mu; Chen-Peng-Tang"
+    }
+   ],
+   "closestPriorWork": "Lin and Chen Theorems 4.1, 5.2 and Section 7 conjecture; localisation (Bartlett-Bousquet-Mendelson 2005, Koltchinskii 2006) and Baraud-Chen (2024) give the independent-case upper bound up to a log T factor",
+   "verdict": "partially-known-cited",
+   "verdictNote": "the independent-case upper bound up to log T follows from standard localisation and is credited; new there: removing the log factor (Lemma 5) and the matching lower bounds"
+  },
+  {
+   "claim": "Calibrated hard family: alternatives with identical prior, identical expert calibration curves and identical report-vector law, on a dyadic grid with O(log(nm)) digits, differing only in two-way interactions",
+   "unit": "object",
+   "paperLocation": "Section 4.2, worked example",
+   "searches": [
+    {
+     "date": "2026-11-24",
+     "corpus": "arXiv and general web searches up to 24 November 2026 (lead, and separately the editor and domain roles of the internal review); works citing or extending Lin and Chen (NeurIPS 2023, arXiv:2207.13126); Evidence Press corpus (site papers/ and the batch corpus list)",
+     "query": "sample complexity of forecast aggregation; learning the Bayesian aggregator from past cases; Lin Chen conjecture 1/epsilon; conditionally independent experts aggregation sample complexity; robust forecast aggregation; partial evidence aggregation"
+    },
+    {
+     "date": "2026-11-24",
+     "corpus": "the cited works, obtained and read (arXiv versions, publisher pages and the conference poster)",
+     "query": "Lin-Chen arXiv:2207.13126 Theorems 4.1, 5.2, 5.4, 5.5, 6.1, 7.1, Lemma 5.1, Section 7 and Appendix D.1; poster Future Work panel; Agrawal Theorem I.3; Bousquet Theorem 2.3; Wu-Lin-Weng Section 4; Bartlett-Bousquet-Mendelson; Koltchinskii; Baraud-Chen Theorem 1; Babichenko-Garber; Guo-Li-Mu; Chen-Peng-Tang"
+    }
+   ],
+   "closestPriorWork": "Lin and Chen lower-bound constructions (Theorem 4.1, Appendix D.1)",
+   "verdict": "new-in-bounded-search",
+   "verdictNote": "construction keeping every marginal law fixed not found"
+  },
+  {
+   "claim": "Known prior (Proposition 7); unbounded report alphabets rule out uniform consistency for any fixed dependence allowance (Proposition 8); extension to finitely many outcomes with a factor k gap under conditional independence (Theorem 9, Propositions 10-11)",
+   "unit": "statement",
+   "paperLocation": "Sections 4.3, 5, 6",
+   "searches": [
+    {
+     "date": "2026-11-24",
+     "corpus": "arXiv and general web searches up to 24 November 2026 (lead, and separately the editor and domain roles of the internal review); works citing or extending Lin and Chen (NeurIPS 2023, arXiv:2207.13126); Evidence Press corpus (site papers/ and the batch corpus list)",
+     "query": "sample complexity of forecast aggregation; learning the Bayesian aggregator from past cases; Lin Chen conjecture 1/epsilon; conditionally independent experts aggregation sample complexity; robust forecast aggregation; partial evidence aggregation"
+    },
+    {
+     "date": "2026-11-24",
+     "corpus": "the cited works, obtained and read (arXiv versions, publisher pages and the conference poster)",
+     "query": "Lin-Chen arXiv:2207.13126 Theorems 4.1, 5.2, 5.4, 5.5, 6.1, 7.1, Lemma 5.1, Section 7 and Appendix D.1; poster Future Work panel; Agrawal Theorem I.3; Bousquet Theorem 2.3; Wu-Lin-Weng Section 4; Bartlett-Bousquet-Mendelson; Koltchinskii; Baraud-Chen Theorem 1; Babichenko-Garber; Guo-Li-Mu; Chen-Peng-Tang"
+    }
+   ],
+   "closestPriorWork": "Lin and Chen Theorem 6.1 (multi-outcome, conditional independence); Wu-Lin-Weng pairwise coupling",
+   "verdict": "new-in-bounded-search",
+   "verdictNote": "not found; comparison with Lin-Chen Theorem 6.1 given in Section 6"
+  },
+  {
+   "claim": "Method: log-free least squares over a pointwise-ordered one-parameter family (packing of ordered chains with Bousquet's inequality), a histogram bound via Agrawal's multinomial concentration, validation between pooling and histogram candidates, and calibrated two-point testing lower bounds",
+   "unit": "method",
+   "paperLocation": "Section 3 (Lemmas 4-6, Section 3.4) and Section 4",
+   "searches": [
+    {
+     "date": "2026-11-24",
+     "corpus": "arXiv and general web searches up to 24 November 2026 (lead, and separately the editor and domain roles of the internal review); works citing or extending Lin and Chen (NeurIPS 2023, arXiv:2207.13126); Evidence Press corpus (site papers/ and the batch corpus list)",
+     "query": "sample complexity of forecast aggregation; learning the Bayesian aggregator from past cases; Lin Chen conjecture 1/epsilon; conditionally independent experts aggregation sample complexity; robust forecast aggregation; partial evidence aggregation"
+    },
+    {
+     "date": "2026-11-24",
+     "corpus": "the cited works, obtained and read (arXiv versions, publisher pages and the conference poster)",
+     "query": "Lin-Chen arXiv:2207.13126 Theorems 4.1, 5.2, 5.4, 5.5, 6.1, 7.1, Lemma 5.1, Section 7 and Appendix D.1; poster Future Work panel; Agrawal Theorem I.3; Bousquet Theorem 2.3; Wu-Lin-Weng Section 4; Bartlett-Bousquet-Mendelson; Koltchinskii; Baraud-Chen Theorem 1; Babichenko-Garber; Guo-Li-Mu; Chen-Peng-Tang"
+    }
+   ],
+   "closestPriorWork": "localised Rademacher complexities (Bartlett-Bousquet-Mendelson; Koltchinskii); Agrawal (2020); Bousquet (2002)",
+   "verdict": "partially-known-cited",
+   "verdictNote": "standard tools, credited; the ordered-chain argument removing log T was not found in the searched sources"
+  }
+ ],
+ "sourcesReadInFull": [
+  {
+   "citation": "Lin, T. and Chen, Y. (2023), Sample complexity of forecast aggregation, NeurIPS 36 (arXiv:2207.13126)",
+   "usedFor": "model, prior bounds, conjecture, Lemma 5.1 attribution",
+   "readWhat": "whole paper (arXiv version) including appendices",
+   "date": "2026-11-24",
+   "evidenceLocator": "https://doi.org/10.52202/075280-1564"
+  },
+  {
+   "citation": "Lin, T. and Chen, Y. (2023), conference poster, NeurIPS 2023",
+   "usedFor": "open directions quoted",
+   "readWhat": "whole poster",
+   "date": "2026-11-24",
+   "evidenceLocator": "https://tao-l.github.io/files/NeurIPS-23-forecast-aggregation-poster.pdf"
+  },
+  {
+   "citation": "Agrawal, R. (2020), IEEE Trans. Inf. Theory 66, 6297-6302 (arXiv:1904.02291)",
+   "usedFor": "multinomial concentration, Theorem I.3",
+   "readWhat": "whole paper (arXiv version)",
+   "date": "2026-11-24",
+   "evidenceLocator": "https://doi.org/10.1109/TIT.2020.2996134"
+  },
+  {
+   "citation": "Bousquet, O. (2002), C. R. Math. 334, 495-500",
+   "usedFor": "Theorem 2.3 as quoted in Lemma 5",
+   "readWhat": "whole paper",
+   "date": "2026-11-24",
+   "evidenceLocator": "https://doi.org/10.1016/S1631-073X(02)02292-6"
+  },
+  {
+   "citation": "Wu, T.-F., Lin, C.-J. and Weng, R. C. (2004), JMLR 5, 975-1005",
+   "usedFor": "pairwise coupling, Section 6",
+   "readWhat": "whole paper",
+   "date": "2026-11-24",
+   "evidenceLocator": "https://www.jmlr.org/papers/v5/wu04a.html"
+  },
+  {
+   "citation": "Bartlett, P. L., Bousquet, O. and Mendelson, S. (2005), Ann. Statist. 33, 1497-1537 (arXiv:math/0508275)",
+   "usedFor": "localisation comparison",
+   "readWhat": "whole paper (arXiv version)",
+   "date": "2026-11-24",
+   "evidenceLocator": "https://doi.org/10.1214/009053605000000282"
+  },
+  {
+   "citation": "Koltchinskii, V. (2006), Ann. Statist. 34, 2593-2656 (arXiv:0708.0083)",
+   "usedFor": "localisation comparison",
+   "readWhat": "whole paper (arXiv version)",
+   "date": "2026-11-24",
+   "evidenceLocator": "https://doi.org/10.1214/009053606000001019"
+  },
+  {
+   "citation": "Baraud, Y. and Chen, J. (2024), J. Statist. Plann. Inference 233, 106167 (arXiv:2011.01657)",
+   "usedFor": "robust regression comparison (Theorem 1 log factor)",
+   "readWhat": "whole paper (arXiv version)",
+   "date": "2026-11-24",
+   "evidenceLocator": "https://doi.org/10.1016/j.jspi.2024.106167"
+  },
+  {
+   "citation": "Babichenko, Y. and Garber, D. (2021), Math. Oper. Res. 46, 628-641 (arXiv:1802.07107)",
+   "usedFor": "related model (partial evidence)",
+   "readWhat": "whole paper (arXiv version)",
+   "date": "2026-11-24",
+   "evidenceLocator": "https://doi.org/10.1287/moor.2020.1080"
+  },
+  {
+   "citation": "Guo, X., Li, Y. and Mu, Y. (2026), arXiv:2606.31020",
+   "usedFor": "related model (robust aggregation with feedback)",
+   "readWhat": "whole paper",
+   "date": "2026-11-24",
+   "evidenceLocator": "https://arxiv.org/abs/2606.31020"
+  },
+  {
+   "citation": "Chen, Z., Peng, C. and Tang, W. (2026), arXiv:2604.24517",
+   "usedFor": "related model (prior-agnostic robust aggregation)",
+   "readWhat": "whole paper",
+   "date": "2026-11-24",
+   "evidenceLocator": "https://arxiv.org/abs/2604.24517"
+  }
+ ],
+ "limitationTriage": [
+  {
+   "limitation": "With k outcomes a factor of about k remains between upper and lower bounds under conditional independence",
+   "closingQuestion": "Is the k-dependence linear?",
+   "triedOrSearched": "bounded attempt with a joint (k-1)-offset multinomial-logit fit; the one-dimensional ordering argument did not extend without a log T factor",
+   "estimatedCost": "weeks",
+   "cheap": false,
+   "decision": "OPEN",
+   "reasonOpen": "Section 7 open problem 1",
+   "whyNotClosedNow": "research-level; recorded as open"
+  },
+  {
+   "limitation": "Reports assumed exact calibrated posteriors; rounding not covered",
+   "closingQuestion": "How does rounding to a grid change the rate?",
+   "triedOrSearched": "Section 7 scope paragraph: the hard family needs spacing 1/(8nm), finer than one percentage point once nm >= 13; the histogram candidate is unaffected by rounding",
+   "estimatedCost": "weeks",
+   "cheap": false,
+   "decision": "OPEN",
+   "reasonOpen": "Section 7 open problem 2",
+   "whyNotClosedNow": "out of scope"
+  },
+  {
+   "limitation": "Constants are universal but not optimised (explicit lower constant 2^-17)",
+   "closingQuestion": "What are the best constants?",
+   "triedOrSearched": "explicit lower constant derived and checked on a grid in code/verify.py",
+   "estimatedCost": "weeks",
+   "cheap": false,
+   "decision": "OPEN",
+   "reasonOpen": "not needed for the rate",
+   "whyNotClosedNow": "optional refinement"
+  },
+  {
+   "limitation": "Worst case over all laws",
+   "closingQuestion": "How hard are typical groups of forecasters?",
+   "triedOrSearched": "small simulation (code/simulate.py) as an illustration only",
+   "estimatedCost": "open-ended",
+   "cheap": false,
+   "decision": "OPEN",
+   "reasonOpen": "minimax framing by design",
+   "whyNotClosedNow": "out of scope"
+  },
+  {
+   "limitation": "Scripts relied on assert in the source bundle",
+   "closingQuestion": "Do the finite checks fail correctly under python -O?",
+   "triedOrSearched": "replaced by code/verify.py with explicit checks; negative control exits 1 under -O",
+   "estimatedCost": "hours",
+   "cheap": true,
+   "decision": "CLOSED",
+   "reasonOpen": "",
+   "whyNotClosedNow": ""
+  },
+  {
+   "limitation": "Novelty rests on searches of limited scope",
+   "closingQuestion": "Would further indexes change attribution?",
+   "triedOrSearched": "arXiv and web searches, cited sources read, Evidence Press corpus checked",
+   "estimatedCost": "subscription indexes",
+   "cheap": false,
+   "decision": "OPEN",
+   "reasonOpen": "subscription indexes were outside the searched corpus",
+   "whyNotClosedNow": "recorded here; the paper positions its results against the sources read"
+  }
+ ],
+ "extensionScout": {
+  "by": "the internal review panel, the proof auditor, the re-reviewer and the lead",
+  "date": "2026-11-24",
+  "proposals": [
+   "close the k versus k^2 gap for many outcomes",
+   "rounded or noisy reports",
+   "extremised (two-parameter) pooling",
+   "partial-evidence lower bound",
+   "illustrative simulation of the estimator"
+  ],
+  "actions": [
+   "attempted in a bounded round; not closed; stated as open",
+   "not done: stated as open",
+   "not done: stated as open",
+   "not done: stated as open",
+   "done: code/simulate.py (illustration only)"
+  ]
+ }
+}

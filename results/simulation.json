@@ -1,0 +1,38 @@
+{
+ "criterion": "independent law: largest T*risk within a factor of three of the smallest, T in {250,1000,4000}",
+ "dependent": [
+  {
+   "T": 250,
+   "T_times_risk": 0.478,
+   "mean_excess_risk": 0.0019116
+  },
+  {
+   "T": 1000,
+   "T_times_risk": 0.486,
+   "mean_excess_risk": 0.0004865
+  },
+  {
+   "T": 4000,
+   "T_times_risk": 0.501,
+   "mean_excess_risk": 0.0001254
+  }
+ ],
+ "independent": [
+  {
+   "T": 250,
+   "T_times_risk": 0.429,
+   "mean_excess_risk": 0.0017158
+  },
+  {
+   "T": 1000,
+   "T_times_risk": 0.417,
+   "mean_excess_risk": 0.0004172
+  },
+  {
+   "T": 4000,
+   "T_times_risk": 0.393,
+   "mean_excess_risk": 9.84e-05
+  }
+ ],
+ "status": "PASS"
+}
